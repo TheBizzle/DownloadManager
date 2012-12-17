@@ -1,0 +1,17 @@
+logs
+project/project
+project/target
+target
+tmp
+.history
+/.idea/workspace.xml
+*.iml
+*-old
+/.idea/codeStyleSettings.xml
+/.idea/libraries/
+/.idea/projectCodeStyle.xml
+/.idea/ant.xml
+.DS_Store
+public/javascripts/managed/
+public/stylesheets/managed/
+*.swp
