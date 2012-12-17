@@ -15,3 +15,6 @@ tmp
 public/javascripts/managed/
 public/stylesheets/managed/
 *.swp
+/.idea/dataSources.ids
+/.idea/dataSources.xml
+/.idea/sqldialects.xml
