@@ -15,8 +15,4 @@ object Application extends Controller {
     Ok(views.html.downloads("Well done, good sir"))
   }
 
-  def testbed = Action {
-    Ok(views.html.testbed(DownloadDBManager.getDLCountByYMD(1998, 12, 12)))
-  }
-  
 }
