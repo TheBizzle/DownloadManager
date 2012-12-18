@@ -3,6 +3,8 @@ package controllers
 import play.api._
 import play.api.mvc._
 
+import models.download.DownloadDBManager
+
 object Application extends Controller {
   
   def index = Action {
@@ -14,7 +16,7 @@ object Application extends Controller {
   }
 
   def testbed = Action {
-    Ok(views.html.testbed("WHAT DO YOU EVEN THINK YOU'RE TESTING?!"))
+    Ok(views.html.testbed(DownloadDBManager.getDLCountByYMD(1998, 12, 12)))
   }
   
 }
