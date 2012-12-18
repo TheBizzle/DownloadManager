@@ -10,7 +10,21 @@ package models.download
 sealed trait OS
 
 object OS {
+
   case object Windows extends OS
   case object Mac     extends OS
   case object Linux   extends OS
+  case object Other   extends OS
+
+  def apply(str: String) : OS = {
+    if (str contains "Windows")
+      Windows
+    else if (str contains "Mac")
+      Mac
+    else if ((str contains "nix") || (str contains "nux"))
+      Linux
+    else
+      Other
+  }
+
 }
