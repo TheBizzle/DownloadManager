@@ -20,12 +20,12 @@ import play.api.Play.current
 object AuthDBManager {
 
   def validates(username: String, password: String) =
-    pwHashForUsername(username) map (_ == BCrypt.hashpw(password, BCrypt.gensalt())) fold((_ => false), identity)
+    pwHashForUsername(username) map (hash => BCrypt.checkpw(password, hash)) fold((_ => false), identity)
 
   private def pwHashForUsername(username: String) : ValidationNEL[String, String] = {
     DB.withConnection { implicit connection =>
       import DBConstants.Users._
-      val pwOpt: Option[String] = SQL (
+      SQL (
         """
           |SELECT %s FROM %s
           |WHERE %s = {name};
@@ -34,8 +34,7 @@ object AuthDBManager {
         "name" -> username
       ) as {
         str(PWKey).singleOpt
-      }
-      pwOpt map (_.successNel[String]) getOrElse (("No entry for user with `name` == " + username).failNel)
+      } map (_.successNel[String]) getOrElse (("No entry for user with `name` == " + username).failNel)
     }
   }
 
