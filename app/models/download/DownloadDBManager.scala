@@ -78,7 +78,7 @@ object DownloadDBManager {
       """.stripMargin.format(TableName, IDKey)
     ) on (
       "id" -> id
-    )) headOption;
+    )).headOption
     opt map (_.successNel[String]) getOrElse ("No download file found with id %s".format(id).failNel)
   }}
 
