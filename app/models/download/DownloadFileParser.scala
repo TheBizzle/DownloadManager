@@ -13,7 +13,7 @@ import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
 
 object DownloadFileParser {
 
-  private val RelevancyRegex   = """.*/netlogo/([^/]+)/(.*)""".r
+  private val RelevancyRegex   = """.*/netlogo/((?:3DPreview|\d+\.)[^/]+)/(.*)""".r
   private val LinuxFileRegex   = """.*\.tar.gz""".r
   private val MacOSFileRegex   = """.*\.dmg""".r
   private val WindowsFileRegex = """.*\.exe""".r
@@ -29,17 +29,19 @@ object DownloadFileParser {
     import OS._
 
     // Note to self: All non-VM Windows installers match this regex: .*NoVM.*\.exe
-    val os = path match {
-      case LinuxFileRegex   => Linux
-      case MacOSFileRegex   => Mac
-      case WindowsFileRegex => Windows
-      case _                => Other
+    val osMaybe = path match {
+      case LinuxFileRegex()   => Linux.successNel[String]
+      case MacOSFileRegex()   => Mac.successNel[String]
+      case WindowsFileRegex() => Windows.successNel[String]
+      case _                  => "Non-download file".failNel
     }
 
-    val relativePath = "%s%s%s".format(version, File.separator, path)
-    val size = new File(play.Configuration.root.getString("downloads.base_path") + File.separator + relativePath).length
-
-    DownloadFile(None, version, os, size, relativePath).successNel[String]
+    osMaybe flatMap {
+      os =>
+        val relativePath = "%s%s%s".format(version, File.separator, path)
+        val size = new File(play.Configuration.root.getString("downloads.base_path") + File.separator + relativePath).length
+        DownloadFile(None, version, os, size, relativePath).successNel[String]
+    }
 
   }
 
