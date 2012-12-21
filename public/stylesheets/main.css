@@ -1,9 +1,8 @@
 .login-form {
   border-radius: 10px;
-  border: 3px solid white;
-  background-color: #4c4;
+  background-color: #2eb24d;
   padding: 7px;
-  width: 32%;
+  width: 55%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -18,17 +17,16 @@
 .login-form > div > p > button {
   border-radius: 14px;
   width: 40%;
-  background-color: #303030;
-  color: #eee;
-  font-size: 24px;
   padding-top: 4px;
   padding-bottom: 4px;
+}
+
+.flash {
+  color: #fa8400;
+  font-weight: bold;
 }
 
 body {
   background-color: #454545;
 }
 
-* {
-  font-family: Impact, Charcoal, sans-serif;
-}
