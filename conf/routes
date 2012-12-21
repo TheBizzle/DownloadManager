@@ -5,6 +5,7 @@
 # Home page
 GET     /                           controllers.Application.index
 GET     /downloads                  controllers.Application.downloads
+POST    /request-data               controllers.Application.requestData
 
 GET     /login                      controllers.Auth.login
 POST    /login                      controllers.Auth.authenticate
