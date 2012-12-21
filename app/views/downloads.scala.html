@@ -1,5 +1,14 @@
 @(message: String)
 
 @main("Downloads") {
-  @message
+  <div id="tabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+  	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
+  		<li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active" role="tab" tabindex="0" aria-controls="tabs-1" aria-labelledby="ui-id-5" aria-selected="true"><a href="#tabs-1" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-5">First</a></li>
+  		<li class="ui-state-default ui-corner-top" role="tab" tabindex="-1" aria-controls="tabs-2" aria-labelledby="ui-id-6" aria-selected="false"><a href="#tabs-2" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-6">Second</a></li>
+  		<li class="ui-state-default ui-corner-top" role="tab" tabindex="-1" aria-controls="tabs-3" aria-labelledby="ui-id-7" aria-selected="false"><a href="#tabs-3" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-7">Third</a></li>
+  	</ul>
+  	<div id="tabs-1" aria-labelledby="ui-id-5" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: block;" aria-expanded="true" aria-hidden="false"></div>
+  	<div id="tabs-2" aria-labelledby="ui-id-6" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: none;" aria-expanded="false" aria-hidden="true"></div>
+  	<div id="tabs-3" aria-labelledby="ui-id-7" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: none;" aria-expanded="false" aria-hidden="true"></div>
+  </div>
 }

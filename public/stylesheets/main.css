@@ -26,7 +26,10 @@
   font-weight: bold;
 }
 
+.tall {
+  height: 16em;
+}
+
 body {
   background-color: #454545;
 }
-
