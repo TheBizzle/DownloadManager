@@ -10,7 +10,8 @@ object ApplicationBuild extends Build {
     val appDependencies = Seq(
       "org.scalaz" %% "scalaz-core" % "7.0-SNAPSHOT",
       "mysql" % "mysql-connector-java" % "5.1.18",
-      "org.mindrot" % "jbcrypt" % "0.3m"
+      "org.mindrot" % "jbcrypt" % "0.3m",
+      "org.scalala" % "scalala_2.9.1" % "1.0.0.RC2"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
