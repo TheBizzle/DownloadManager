@@ -8,14 +8,14 @@
   margin-right: auto;
 }
 
-.login-form > p > input {
+.login-form > div > p > input {
   border-radius: 8px;
   padding: 5px 5px 5px 8px;
   font-size: 22px;
   width: 45%;
 }
 
-.login-form > p > button {
+.login-form > div > p > button {
   border-radius: 14px;
   width: 40%;
   background-color: #333;
