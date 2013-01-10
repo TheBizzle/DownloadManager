@@ -4,7 +4,7 @@ import play.api.{ data, mvc }
 import mvc.{ Action, Controller }
 import data.{ Form, Forms }, Forms.{ text, tuple }
 
-import models.download.DownloadDBManager
+import models.download.{ DownloadDBManager, SimpleDate }
 
 object Application extends Controller with Secured {
 
@@ -33,7 +33,13 @@ object Application extends Controller with Secured {
     username => implicit request =>
       dataForm.bindFromRequest fold (
         form     => BadRequest("Crap"),
-        criteria => Ok("Good")
+        criteria => Ok {
+          def parseOS(str: String) = ""
+          val os        = parseOS(criteria._1)
+          val startDate = SimpleDate(criteria._2)
+          val endDate   = SimpleDate(criteria._3)
+          (DownloadDBManager.getDownloadStatsBetween(startDate, endDate) map { case (date, count) => "%s:%s".format(date.asDateString, count) }).mkString(";")
+        }
       )
   }
 

@@ -23,6 +23,9 @@ object DownloadDBManager {
 
   import AnormExtras._
 
+  def getDownloadStatsBetween(startDate: SimpleDate, endDate: SimpleDate) : Seq[(SimpleDate, Long)] =
+    startDate to endDate map { case date @ SimpleDate(day, month, year) => (date, getDLCountByYMD(day, month, year)) }
+
   def getDLCountByY(year: Int) : Long = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserDownloads._
