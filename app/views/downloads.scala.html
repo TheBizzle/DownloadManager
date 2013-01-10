@@ -1,33 +1,32 @@
 @(message: String)
 
 @main("Downloads") {
+  <script src="@routes.Assets.at("javascripts/downloads.js")" type="text/javascript"></script>
   <div id="tabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
     <!-- Start with crap; make it better -->
   	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all" role="tablist">
   		<li class="ui-state-default ui-corner-top ui-tabs-active ui-state-active" role="tab" tabindex="0" aria-controls="tabs-1" aria-labelledby="ui-id-5" aria-selected="true"><a href="#tabs-1" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-5">First</a></li>
   		<li class="ui-state-default ui-corner-top" role="tab" tabindex="-1" aria-controls="tabs-2" aria-labelledby="ui-id-6" aria-selected="false"><a href="#tabs-2" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-6">Second</a></li>
   		<li class="ui-state-default ui-corner-top" role="tab" tabindex="-1" aria-controls="tabs-3" aria-labelledby="ui-id-7" aria-selected="false"><a href="#tabs-3" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-7">Third</a></li>
-        <li class="ui-state-default ui-corner-top" role="tab" tabindex="-1" aria-controls="tabs-4" aria-labelledby="ui-id-8" aria-selected="false"><a href="#tabs-3" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-7">Fourth</a></li>
+        <li class="ui-state-default ui-corner-top" role="tab" tabindex="-1" aria-controls="tabs-4" aria-labelledby="ui-id-8" aria-selected="false"><a href="#tabs-3" class="ui-tabs-anchor" role="presentation" tabindex="-1" id="ui-id-8">Fourth</a></li>
   	</ul>
   	<div id="tabs-1" aria-labelledby="ui-id-5" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: block;" aria-expanded="true" aria-hidden="false">
 
-      @helper.form(routes.Application.requestData) {
+    <div id="check-os" class="check-set">
+      <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label">Windows</label>
+      <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label">Mac OS</label>
+      <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label">Linux</label>
+    </div>
 
-        <div id="check-os" class="check-set">
-          <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label">Windows</label>
-          <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label">Mac OS</label>
-          <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label">Linux</label>
-        </div>
+    <p>From <input type="text" id="start-day" class="date-chooser" /> to <input type="text" id="end-day" class="date-chooser" /></p>
 
-        <p>From <input type="text" id="start-date-picker" class="date-chooser" /> to <input type="text" id="end-date-picker" class="date-chooser" /></p>
+    <p>
+      <button type="submit" id="queryBtn" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+              role="button" aria-disabled="false" onclick="submitQuery('@routes.Application.requestData')">
+        <span class="ui-button-text">Query</span>
+      </button>
+    </p>
 
-        <p>
-          <button type="submit" id="queryBtn" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-            <span class="ui-button-text">Query</span>
-          </button>
-        </p>
-
-      }
     </div>
   	<div id="tabs-2" aria-labelledby="ui-id-6" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: none;" aria-expanded="false" aria-hidden="true"></div>
   	<div id="tabs-3" aria-labelledby="ui-id-7" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: none;" aria-expanded="false" aria-hidden="true"></div>

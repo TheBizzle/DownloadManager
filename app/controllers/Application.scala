@@ -21,8 +21,8 @@ object Application extends Controller with Secured {
   val dataForm = Form (
     tuple (
       "os"        -> text,
-      "start-day" -> text,
-      "end-day"   -> text
+      "start_day" -> text,
+      "end_day"   -> text
     ) verifying (
       "Invalid username or password",
       (_ match { case (os, start, end) => validateData(os, start, end) })

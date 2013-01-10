@@ -51,27 +51,5 @@ window.onload = function() {
     elem.datepicker();
   });
 
-  $('#start-date-picker').val("01/01/2001");
-
-  $('#end-date-picker').val(getTodaysDateString());
-
 };
 
-// Heavily based on code from Samuel Meddows (http://stackoverflow.com/a/4929629/1116979)
-var getTodaysDateString = function() {
-
-  var padDatePortion = function(p) {
-    if (p < 10)
-      return "0" + p;
-    else
-      return p;
-  };
-
-  var today = new Date();
-  var dd    = padDatePortion(today.getDate());
-  var mm    = padDatePortion(today.getMonth() + 1); //January is 0!
-  var yyyy  = today.getFullYear();
-
-  return mm + "/" + dd + "/" + yyyy;
-
-};
