@@ -43,10 +43,10 @@ window.onload = function() {
 
   $('.os-button').each(function() {
     var elem = $(this);
-    elem.click();
+    if (!elem[0].checked) elem.click();
   });
 
-  $('.date-picker').each(function() {
+  $('.date-chooser').each(function() {
     var elem = $(this);
     elem.datepicker();
   });
