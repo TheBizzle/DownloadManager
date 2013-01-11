@@ -18,3 +18,4 @@ public/stylesheets/managed/
 /.idea/dataSources.ids
 /.idea/dataSources.xml
 /.idea/sqldialects.xml
+/public/graphs
