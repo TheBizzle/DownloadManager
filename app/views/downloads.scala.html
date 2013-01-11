@@ -12,20 +12,22 @@
   	</ul>
   	<div id="tabs-1" aria-labelledby="ui-id-5" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: block;" aria-expanded="true" aria-hidden="false">
 
-    <div id="check-os" class="check-set">
-      <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label">Windows</label>
-      <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label">Mac OS</label>
-      <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label">Linux</label>
-    </div>
+      <div id="check-os" class="check-set">
+        <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label">Windows</label>
+        <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label">Mac OS</label>
+        <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label">Linux</label>
+      </div>
 
-    <p>From <input type="text" id="start-day" class="date-chooser" /> to <input type="text" id="end-day" class="date-chooser" /></p>
+      <p>From <input type="text" id="start-day" class="date-chooser" /> to <input type="text" id="end-day" class="date-chooser" /></p>
 
-    <p>
-      <button type="submit" id="queryBtn" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
-              role="button" aria-disabled="false" onclick="submitQuery('@routes.Application.requestData')">
-        <span class="ui-button-text">Query</span>
-      </button>
-    </p>
+      <p>
+        <button type="submit" id="queryBtn" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+                role="button" aria-disabled="false" onclick="submitQuery('@routes.Application.requestData')">
+          <span class="ui-button-text">Query</span>
+        </button>
+      </p>
+
+      <img id="query-graph" src="" alt="Graphical representation of download data for given criteria">
 
     </div>
   	<div id="tabs-2" aria-labelledby="ui-id-6" class="ui-tabs-panel ui-widget-content ui-corner-bottom tall" role="tabpanel" style="display: none;" aria-expanded="false" aria-hidden="true"></div>

@@ -26,7 +26,9 @@ var submitQuery = function(url) {
     type: "POST",
     url:  url,
     data: data,
-    success: function(result) { alert(result); }
+    success: function(result) {
+      $("#query-graph").attr('src', '/assets/graphs/' + result);
+    }
   });
 };
 

@@ -16,11 +16,17 @@ import UrlUtil.normalize
 
 object Grapher {
 
-  def fromDateCountPairs(pairs: Seq[(SimpleDate, Long)]) : String = {
-    makeChart()
+  def fromDateCountPairs(pairs: Seq[(SimpleDate, Long)]) : String = (generateChartURL _ andThen obtainChart _)(pairs)
+
+  private def obtainChart(urlStr: String) : String = {
+    import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
+    val filename = java.util.UUID.randomUUID.toString + ".png"
+    val filepath = "./public/graphs/%s".format(filename)
+    IOUtils.copyAndClose(new URL(urlStr).openStream(), new FileOutputStream(filepath))
+    filename
   }
-  
-  private def makeChart() : String = {
+
+  private def generateChartURL[T](dataPairs: Seq[(T, Long)]) : String = {
 
     val NumPoints   = 25
     val competition = new Array[Double](NumPoints)
@@ -41,16 +47,15 @@ object Grapher {
     line2.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
     line2.addShapeMarkers(DIAMOND, SKYBLUE, 12)
     line2.addShapeMarkers(DIAMOND, WHITE, 8)
+    competition.zipWithIndex foreach { case (x, i) => line2.addMarker(com.googlecode.charts4j.Markers.newTextMarker(x.round.toString, GREEN, 15), i) }
 
-    // Defining chart.
     val chart = GCharts.newLineChart(line1, line2)
-    chart.setSize(600, 450)
+    chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
     chart.setTitle("Web Traffic|(in billions of hits)", WHITE, 14)
     chart.addHorizontalRangeMarker(40, 60, newColor(RED, 30))
     chart.addVerticalRangeMarker(70, 90, newColor(GREEN, 30))
     chart.setGrid(25, 25, 3, 2)
 
-    // Defining axis info and styles
     val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
     val xAxis = AxisLabelsFactory.newAxisLabels("Nov", "Dec", "Jan", "Feb", "Mar")
     xAxis.setAxisStyle(axisStyle)
@@ -77,7 +82,7 @@ object Grapher {
     fill.addColorAndOffset(Color.newColor("2E2B2A"), 0)
     chart.setAreaFill(fill)
 
-    chart.toURLString()
+    chart.toURLString
 
   }
 
