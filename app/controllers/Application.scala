@@ -38,7 +38,7 @@ object Application extends Controller with Secured {
           val os        = parseOS(criteria._1)
           val startDate = SimpleDate(criteria._2)
           val endDate   = SimpleDate(criteria._3)
-          (DownloadDBManager.getDownloadStatsBetween(startDate, endDate) map { case (date, count) => "%s:%s".format(date.asDateString, count) }).mkString(";")
+          Grapher.fromDateCountPairs(DownloadDBManager.getDownloadStatsBetween(startDate, endDate))
         }
       )
   }
