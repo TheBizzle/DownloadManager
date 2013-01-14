@@ -46,7 +46,7 @@ object SimpleDate extends QuantumCompanion[SimpleDate] {
 
   private def retrieveDMY(str: String) : (Int, Int, Int) = {
     str match {
-      case DateRegex(d, m, y) =>
+      case DateRegex(m, d, y) =>
         val day   = parseDayStr(d)
         val month = parseMonthStr(m)
         val year  = parseYearStr(y)
