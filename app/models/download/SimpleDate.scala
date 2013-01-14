@@ -32,7 +32,7 @@ case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDat
   }
 
   override protected def cons(jodaDate: LocalDate)        = SimpleDate(jodaDate)
-  override protected def iterateDate(jodaDate: LocalDate) = jodaDate.plusDays(1)
+  override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusDays(1)
 
 }
 
@@ -76,7 +76,7 @@ case class SimpleMonth(month: Int, year: Int) extends Quantum[SimpleMonth] {
   }
 
   override protected def cons(jodaDate: LocalDate)        = SimpleMonth(jodaDate)
-  override protected def iterateDate(jodaDate: LocalDate) = jodaDate.plusMonths(1)
+  override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusMonths(1)
 
 }
 
@@ -113,7 +113,7 @@ case class SimpleYear(year: Int) extends Quantum[SimpleYear] {
   override def <=(that: SimpleYear) = this.year <= that.year
 
   override protected def cons(jodaDate: LocalDate)        = SimpleYear(jodaDate)
-  override protected def iterateDate(jodaDate: LocalDate) = jodaDate.plusYears(1)
+  override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusYears(1)
 
 }
 
@@ -134,7 +134,7 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 protected trait Quantum[T <: Quantum[T]] {
 
   protected def cons(jodaDate: LocalDate) : T
-  protected def iterateDate(jodaDate: LocalDate) : LocalDate
+  protected def incrementDate(jodaDate: LocalDate) : LocalDate
 
   def <=(that: T) : Boolean
 
@@ -146,7 +146,7 @@ protected trait Quantum[T <: Quantum[T]] {
     @tailrec
     def helper(startDate: LocalDate, endDate: LocalDate, acc: Seq[T] = Seq()) : Seq[T] = {
       if (startDate isBefore endDate)
-        helper(iterateDate(startDate), endDate, cons(startDate) +: acc)
+        helper(incrementDate(startDate), endDate, cons(startDate) +: acc)
       else
         (cons(startDate) +: acc).reverse
     }
