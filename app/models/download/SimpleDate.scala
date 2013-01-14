@@ -31,7 +31,7 @@ case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDat
     }
   }
 
-  override protected def cons(jodaDate: LocalDate)        = SimpleDate(jodaDate)
+  override protected def convert      (jodaDate: LocalDate) = SimpleDate(jodaDate)
   override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusDays(1)
 
 }
@@ -75,7 +75,7 @@ case class SimpleMonth(month: Int, year: Int) extends Quantum[SimpleMonth] {
     }
   }
 
-  override protected def cons(jodaDate: LocalDate)        = SimpleMonth(jodaDate)
+  override protected def convert      (jodaDate: LocalDate) = SimpleMonth(jodaDate)
   override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusMonths(1)
 
 }
@@ -112,7 +112,7 @@ case class SimpleYear(year: Int) extends Quantum[SimpleYear] {
   override def asJodaDate          = new LocalDate(this.year)
   override def <=(that: SimpleYear) = this.year <= that.year
 
-  override protected def cons(jodaDate: LocalDate)        = SimpleYear(jodaDate)
+  override protected def convert      (jodaDate: LocalDate) = SimpleYear(jodaDate)
   override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusYears(1)
 
 }
@@ -133,7 +133,7 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 
 protected trait Quantum[T <: Quantum[T]] {
 
-  protected def cons(jodaDate: LocalDate) : T
+  protected def convert      (jodaDate: LocalDate) : T
   protected def incrementDate(jodaDate: LocalDate) : LocalDate
 
   def <=(that: T) : Boolean
@@ -146,9 +146,9 @@ protected trait Quantum[T <: Quantum[T]] {
     @tailrec
     def helper(startDate: LocalDate, endDate: LocalDate, acc: Seq[T] = Seq()) : Seq[T] = {
       if (startDate isBefore endDate)
-        helper(incrementDate(startDate), endDate, cons(startDate) +: acc)
+        helper(incrementDate(startDate), endDate, convert(startDate) +: acc)
       else
-        (cons(startDate) +: acc).reverse
+        (convert(startDate) +: acc).reverse
     }
 
     val (start, end) = if (this <= that) (this, that) else (that, this)
@@ -165,8 +165,8 @@ protected trait QuantumCompanion[T <: Quantum[T]] {
 
   val DateRegex: util.matching.Regex
 
-  protected def parseDayStr(str: String)   = str.toInt
-  protected def parseMonthStr(str: String) = str.toInt
-  protected def parseYearStr(str: String)  = (if (str.length == 2) "20" + str else str).toInt
+  protected def parseDayStr  (s: String) = s.toInt
+  protected def parseMonthStr(s: String) = s.toInt
+  protected def parseYearStr (s: String) = (if (s.length == 2) "20" + s else s).toInt
 
 }
