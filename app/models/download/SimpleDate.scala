@@ -108,8 +108,8 @@ case class SimpleYear(year: Int) extends Quantum[SimpleYear] {
   def this(dateString: String)(implicit y: Int = SimpleYear.retrieveY(dateString)) =
     this(y)
 
-  override def asDateString         = "%d".format(this.year)
-  override def asJodaDate           = new LocalDate(this.year)
+  override def asDateString        = "%d".format(this.year)
+  override def asJodaDate          = new LocalDate(this.year)
   override def <=(that: SimpleYear) = this.year <= that.year
 
   override protected def cons(jodaDate: LocalDate)        = SimpleYear(jodaDate)
@@ -131,17 +131,17 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 }
 
 
-protected trait Quantum[T] {
+protected trait Quantum[T <: Quantum[T]] {
 
   protected def cons(jodaDate: LocalDate) : T
   protected def iterateDate(jodaDate: LocalDate) : LocalDate
 
-  def <=[U : Quantum](that: U) : Boolean
+  def <=(that: T) : Boolean
 
   def asDateString : String
   def asJodaDate   : LocalDate
 
-  def to[U : Quantum](that: U) : Seq[T] = {
+  def to(that: T) : Seq[T] = {
 
     @tailrec
     def helper(startDate: LocalDate, endDate: LocalDate, acc: Seq[T] = Seq()) : Seq[T] = {
