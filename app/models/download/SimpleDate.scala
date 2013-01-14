@@ -21,6 +21,8 @@ case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDat
 
   def toSimpleMonth = SimpleMonth(month, year)
 
+  override protected val Companion = SimpleDate
+
   override def asDateString = "%d/%d/%d".format(this.month, this.day, this.year)
   override def asJodaDate   = new LocalDate(this.year, this.month, this.day)
   override def <=(that: SimpleDate) : Boolean = {
@@ -31,15 +33,14 @@ case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDat
     }
   }
 
-  override protected def convert      (jodaDate: LocalDate) = SimpleDate(jodaDate)
-  override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusDays(1)
-
 }
 
 object SimpleDate extends QuantumCompanion[SimpleDate] {
 
   override def apply(jodaDate: LocalDate) = new SimpleDate(jodaDate)
   override def apply(dateString: String)  = new SimpleDate(dateString)
+
+  override def incrementDate(jodaDate: LocalDate) = jodaDate.plusDays(1)
 
   override val DateRegex = """(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})""".r
 
@@ -67,6 +68,8 @@ case class SimpleMonth(month: Int, year: Int) extends Quantum[SimpleMonth] {
 
   def toSimpleYear = SimpleYear(year)
 
+  override protected val Companion = SimpleMonth
+
   override def asDateString = "%d/%d".format(this.month, this.year)
   override def asJodaDate   = new LocalDate(this.year, this.month, 1)
   override def <=(that: SimpleMonth) : Boolean = {
@@ -75,15 +78,14 @@ case class SimpleMonth(month: Int, year: Int) extends Quantum[SimpleMonth] {
     }
   }
 
-  override protected def convert      (jodaDate: LocalDate) = SimpleMonth(jodaDate)
-  override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusMonths(1)
-
 }
 
 object SimpleMonth extends QuantumCompanion[SimpleMonth] {
 
   override def apply(jodaDate: LocalDate) = new SimpleMonth(jodaDate)
   override def apply(dateString: String)  = new SimpleMonth(dateString)
+
+  override def incrementDate(jodaDate: LocalDate) = jodaDate.plusMonths(1)
 
   override val DateRegex = """(\d{1,2})[/-](\d{2}|\d{4})""".r
 
@@ -108,12 +110,11 @@ case class SimpleYear(year: Int) extends Quantum[SimpleYear] {
   def this(dateString: String)(implicit y: Int = SimpleYear.retrieveY(dateString)) =
     this(y)
 
+  override protected val Companion = SimpleYear
+
   override def asDateString        = "%d".format(this.year)
   override def asJodaDate          = new LocalDate(this.year)
   override def <=(that: SimpleYear) = this.year <= that.year
-
-  override protected def convert      (jodaDate: LocalDate) = SimpleYear(jodaDate)
-  override protected def incrementDate(jodaDate: LocalDate) = jodaDate.plusYears(1)
 
 }
 
@@ -121,6 +122,8 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 
   override def apply(jodaDate: LocalDate) = new SimpleYear(jodaDate)
   override def apply(dateString: String)  = new SimpleYear(dateString)
+
+  override def incrementDate(jodaDate: LocalDate) = jodaDate.plusYears(1)
 
   override val DateRegex = """(\d{2}|\d{4})""".r
 
@@ -133,8 +136,7 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 
 protected trait Quantum[T <: Quantum[T]] {
 
-  protected def convert      (jodaDate: LocalDate) : T
-  protected def incrementDate(jodaDate: LocalDate) : LocalDate
+  protected def Companion: QuantumCompanion[T]
 
   def <=(that: T) : Boolean
 
@@ -146,9 +148,9 @@ protected trait Quantum[T <: Quantum[T]] {
     @tailrec
     def helper(startDate: LocalDate, endDate: LocalDate, acc: Seq[T] = Seq()) : Seq[T] = {
       if (startDate isBefore endDate)
-        helper(incrementDate(startDate), endDate, convert(startDate) +: acc)
+        helper(Companion.incrementDate(startDate), endDate, Companion(startDate) +: acc)
       else
-        (convert(startDate) +: acc).reverse
+        (Companion(startDate) +: acc).reverse
     }
 
     val (start, end) = if (this <= that) (this, that) else (that, this)
@@ -162,6 +164,8 @@ protected trait QuantumCompanion[T <: Quantum[T]] {
 
   def apply(jodaDate: LocalDate) : T
   def apply(dateString: String)  : T
+
+  def incrementDate(jodaDate: LocalDate) : LocalDate
 
   val DateRegex: util.matching.Regex
 
