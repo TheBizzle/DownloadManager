@@ -1,8 +1,8 @@
 package controllers
 
-import models.download.SimpleDate
+import models.download.Quantum
 
-import com.googlecode.charts4j.{ AxisLabelsFactory, AxisStyle, AxisTextAlignment, Color, Data, Fills, GCharts, LineStyle, Plots, Shape, UrlUtil }
+import com.googlecode.charts4j._
 import Color._
 import Shape._
 import UrlUtil.normalize
@@ -16,7 +16,7 @@ import UrlUtil.normalize
 
 object Grapher {
 
-  def fromDateCountPairs(pairs: Seq[(SimpleDate, Long)]) : String = (generateChartURL _ andThen obtainChart _)(pairs)
+  def fromDateCountPairs[T <: Quantum[T], N : Numeric](pairs: Seq[(T, N)]) : String = (generateChartURL[T, N] _ andThen obtainChart _)(pairs)
 
   private def obtainChart(urlStr: String) : String = {
     import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
@@ -26,50 +26,67 @@ object Grapher {
     filename
   }
 
-  private def generateChartURL[T](dataPairs: Seq[(T, Long)]) : String = {
+  private def generateChartURL[T, N : Numeric](dataPairs: Seq[(T, N)]) : String = {
 
-    val NumPoints   = 60
-    val mywebsite   = new Array[Double](NumPoints)
+    def generateDownloadsLine(data: Seq[Double]) : Line = {
+      val line = Plots.newLine(Data.newData(data.toArray: _*), SKYBLUE, "Downloads")
+      line.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
+      line.addShapeMarkers(DIAMOND, SKYBLUE, 12)
+      line.addShapeMarkers(DIAMOND, WHITE, 8)
+      line
+    }
 
-    0 until NumPoints foreach { i => mywebsite(i) = (math.cos(30 * i * math.Pi / 180) * 10 + 50) * i / 20 }
+    def setupDownloadAxes(ts: Seq[T], chart: AbstractAxisChart) {
 
-    val line = Plots.newLine(Data.newData(mywebsite: _*), SKYBLUE, "Competition.com")
-    line.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
-    line.addShapeMarkers(DIAMOND, SKYBLUE, 12)
-    line.addShapeMarkers(DIAMOND, WHITE, 8)
+      val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
 
-    val chart = GCharts.newLineChart(line)
-    chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
-    chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 14)
-    chart.setGrid(25, 25, 3, 2)
+      val xAxis = AxisLabelsFactory.newAxisLabels("Nov", "Dec", "Jan", "Feb", "Mar")
+      xAxis.setAxisStyle(axisStyle)
 
-    val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
-    val xAxis = AxisLabelsFactory.newAxisLabels("Nov", "Dec", "Jan", "Feb", "Mar")
-    xAxis.setAxisStyle(axisStyle)
-    val xAxis2 = AxisLabelsFactory.newAxisLabels("2007", "2007", "2008", "2008", "2008")
-    xAxis2.setAxisStyle(axisStyle)
-    val yAxis = AxisLabelsFactory.newAxisLabels("", "25", "50", "75", "100")
-    val xAxis3 = AxisLabelsFactory.newAxisLabels("Month", 50.0)
-    xAxis3.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 14, AxisTextAlignment.CENTER))
-    yAxis.setAxisStyle(axisStyle)
-    val yAxis2 = AxisLabelsFactory.newAxisLabels("Hits", 50.0)
-    yAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 14, AxisTextAlignment.CENTER))
-    yAxis2.setAxisStyle(axisStyle)
+      val xAxis2 = AxisLabelsFactory.newAxisLabels("Month", 50.0)
+      xAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 14, AxisTextAlignment.CENTER))
 
-    // Adding axis info to chart.
-    chart.addXAxisLabels(xAxis)
-    chart.addXAxisLabels(xAxis2)
-    chart.addXAxisLabels(xAxis3)
-    chart.addYAxisLabels(yAxis)
-    chart.addYAxisLabels(yAxis2)
+      val yAxis = AxisLabelsFactory.newAxisLabels("", "25", "50", "75", "100")
+      yAxis.setAxisStyle(axisStyle)
 
-    // Defining background and chart fills.
-    chart.setBackgroundFill(Fills.newSolidFill(newColor("1F1D1D")))
-    val fill = Fills.newLinearGradientFill(0, newColor("363433"), 100)
-    fill.addColorAndOffset(Color.newColor("2E2B2A"), 0)
-    chart.setAreaFill(fill)
+      val yAxis2 = AxisLabelsFactory.newAxisLabels("Hits", 50.0)
+      yAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 14, AxisTextAlignment.CENTER))
 
-    chart.toURLString
+      chart.addXAxisLabels(xAxis)
+      chart.addXAxisLabels(xAxis2)
+      chart.addYAxisLabels(yAxis)
+      chart.addYAxisLabels(yAxis2)
+
+    }
+
+    def setupBackground(chart: AbstractAxisChart) {
+      chart.setBackgroundFill(Fills.newSolidFill(newColor("1F1D1D")))
+      val fill = Fills.newLinearGradientFill(0, newColor("363433"), 100)
+      fill.addColorAndOffset(Color.newColor("2E2B2A"), 0)
+      chart.setAreaFill(fill)
+    }
+
+    def generateDownloadsChart(ts: Seq[T], dlLine: Line) : LineChart = {
+
+      val chart = GCharts.newLineChart(dlLine)
+      chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
+      chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 14)
+      chart.setGrid(25, 25, 3, 2)
+
+      setupDownloadAxes(ts, chart)
+      setupBackground(chart)
+
+      chart
+
+    }
+
+    def generateURLString(chart: AbstractAxisChart) = chart.toURLString
+
+    val (entities, counts) = dataPairs.unzip
+
+    // This has been an interesting experiment --JAB (1/14/13)
+    import Numeric.Implicits._
+    (generateDownloadsLine _ andThen generateDownloadsChart(entities, _) _  andThen generateURLString _)(counts map (_.toDouble))
 
   }
 
