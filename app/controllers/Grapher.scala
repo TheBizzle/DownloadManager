@@ -1,10 +1,6 @@
 package controllers
 
-import models.download.Quantum
-
-import com.googlecode.charts4j._
-import Color._
-import Shape._
+import com.googlecode.charts4j._, Color._, Shape._
 
 /**
  * Created with IntelliJ IDEA.
