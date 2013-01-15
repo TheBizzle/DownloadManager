@@ -5,7 +5,6 @@ import models.download.Quantum
 import com.googlecode.charts4j._
 import Color._
 import Shape._
-import UrlUtil.normalize
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,14 +28,14 @@ object Grapher {
   private def generateChartURL[N : Numeric](dataPairs: Seq[(String, N)]) : String = {
 
     def generateDownloadsLine(data: Seq[Double]) : Line = {
-      val line = Plots.newLine(Data.newData(data.toArray: _*), SKYBLUE, "Downloads")
+      val line = Plots.newLine(DataUtil.scale(data.toArray: _*), SKYBLUE, "Downloads")
       line.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
       line.addShapeMarkers(DIAMOND, SKYBLUE, 12)
       line.addShapeMarkers(DIAMOND, WHITE, 8)
       line
     }
 
-    def generateDownloadsChart(strs: Seq[String])(dlLine: Line) : LineChart = {
+    def generateDownloadsChart(strs: Seq[String], maxDLCount: Int)(dlLine: Line) : LineChart = {
 
       // They're "extra" because, a limit of `4` actually gets us 5 labels (the starting one and the four EXTRAS)
       // If we said in that case how many labels we wanted, it would be `5`, but, pretty much every time we use that number,
@@ -71,7 +70,7 @@ object Grapher {
         val xAxis2 = AxisLabelsFactory.newAxisLabels("Date", 50.0)
         xAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
 
-        val yStrs = createAxisLabelRange(0, 100, ExtraYLabelsLimit) map { case 0 => "" case x => x.toString }
+        val yStrs = createAxisLabelRange(0, maxDLCount, ExtraYLabelsLimit) map { case 0 => "" case x => x.toString }
         val yAxis = AxisLabelsFactory.newAxisLabels(yStrs.toArray: _*)
         yAxis.setAxisStyle(axisStyle)
 
@@ -105,7 +104,7 @@ object Grapher {
 
     // This has been an interesting experiment --JAB (1/14/13)
     import Numeric.Implicits._
-    (generateDownloadsLine _ andThen generateDownloadsChart(entities) _ andThen generateURLString _)(counts map (_.toDouble))
+    (generateDownloadsLine _ andThen generateDownloadsChart(entities, counts.max.toInt) _ andThen generateURLString _)(counts map (_.toDouble))
 
   }
 
