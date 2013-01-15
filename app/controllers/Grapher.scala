@@ -28,32 +28,19 @@ object Grapher {
 
   private def generateChartURL[T](dataPairs: Seq[(T, Long)]) : String = {
 
-    val NumPoints   = 25
-    val competition = new Array[Double](NumPoints)
+    val NumPoints   = 60
     val mywebsite   = new Array[Double](NumPoints)
 
-    0 until NumPoints foreach {
-      i =>
-        competition(i) = 100 - (math.cos(30 * i * math.Pi / 180) * 10 + 50) * i / 20
-        mywebsite(i)   = (math.cos(30 * i * math.Pi / 180) * 10 + 50) * i / 20
-    }
+    0 until NumPoints foreach { i => mywebsite(i) = (math.cos(30 * i * math.Pi / 180) * 10 + 50) * i / 20 }
 
-    val line1 = Plots.newLine(Data.newData(mywebsite: _*), newColor("CA3D05"), "My Website.com")
-    line1.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
-    line1.addShapeMarkers(DIAMOND, newColor("CA3D05"), 12)
-    line1.addShapeMarkers(DIAMOND, WHITE, 8)
+    val line = Plots.newLine(Data.newData(mywebsite: _*), SKYBLUE, "Competition.com")
+    line.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
+    line.addShapeMarkers(DIAMOND, SKYBLUE, 12)
+    line.addShapeMarkers(DIAMOND, WHITE, 8)
 
-    val line2 = Plots.newLine(Data.newData(competition: _*), SKYBLUE, "Competition.com")
-    line2.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
-    line2.addShapeMarkers(DIAMOND, SKYBLUE, 12)
-    line2.addShapeMarkers(DIAMOND, WHITE, 8)
-    competition.zipWithIndex foreach { case (x, i) => line2.addMarker(com.googlecode.charts4j.Markers.newTextMarker(x.round.toString, GREEN, 15), i) }
-
-    val chart = GCharts.newLineChart(line1, line2)
+    val chart = GCharts.newLineChart(line)
     chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
-    chart.setTitle("Web Traffic|(in billions of hits)", WHITE, 14)
-    chart.addHorizontalRangeMarker(40, 60, newColor(RED, 30))
-    chart.addVerticalRangeMarker(70, 90, newColor(GREEN, 30))
+    chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 14)
     chart.setGrid(25, 25, 3, 2)
 
     val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
