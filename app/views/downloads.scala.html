@@ -16,13 +16,13 @@
         <tr>
           <td style="width: 45%;">
 
-            <div id="check-os" class="check-set" style="width: 100%; text-align: center;">
-              <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label">Windows</label>
-              <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label">Mac OS</label>
-              <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label">Linux</label>
+            <div id="check-os" class="check-set" style="text-align: center;">
+              <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label" style="width: 33%;">Windows</label>
+              <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label" style="width: 34%;">Mac OS</label>
+              <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label" style="width: 33%;">Linux</label>
             </div>
 
-            <div class="nice-container" style="margin-top: 30px;">
+            <div class="round-bordered" style="margin-top: 30px; padding: 15px 15px 15px 50px;">
               From <input type="text" id="start-day" class="date-chooser date-input" /> to <input type="text" id="end-day" class="date-chooser date-input" />
             </div>
 
@@ -36,7 +36,7 @@
           </td>
           <td style="width: 10%"></td>
           <td style="width: 45%;">
-            <img id="query-graph" src="" alt="Graphical representation of download data for given criteria">
+            <img id="query-graph" src='@routes.Assets.at("images/no-graph.png")' class="round-bordered" alt="Graph">
           </td>
         </tr>
       </table>
