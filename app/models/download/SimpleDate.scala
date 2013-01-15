@@ -134,7 +134,7 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 }
 
 
-protected trait Quantum[T <: Quantum[T]] {
+trait Quantum[T <: Quantum[T]] {
 
   protected def Companion: QuantumCompanion[T]
 
