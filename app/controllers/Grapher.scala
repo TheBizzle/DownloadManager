@@ -16,7 +16,7 @@ import UrlUtil.normalize
 
 object Grapher {
 
-  def fromDateCountPairs[T <: Quantum[T], N : Numeric](pairs: Seq[(T, N)]) : String = (generateChartURL[T, N] _ andThen obtainChart _)(pairs)
+  def fromDateCountPairs[N : Numeric](pairs: Seq[(String, N)]) : String = (generateChartURL[N] _ andThen obtainChart _)(pairs)
 
   private def obtainChart(urlStr: String) : String = {
     import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
@@ -26,7 +26,7 @@ object Grapher {
     filename
   }
 
-  private def generateChartURL[T, N : Numeric](dataPairs: Seq[(T, N)]) : String = {
+  private def generateChartURL[N : Numeric](dataPairs: Seq[(String, N)]) : String = {
 
     def generateDownloadsLine(data: Seq[Double]) : Line = {
       val line = Plots.newLine(Data.newData(data.toArray: _*), SKYBLUE, "Downloads")
@@ -36,47 +36,63 @@ object Grapher {
       line
     }
 
-    def setupDownloadAxes(ts: Seq[T], chart: AbstractAxisChart) {
+    def generateDownloadsChart(strs: Seq[String])(dlLine: Line) : LineChart = {
 
-      val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
+      // They're "extra" because, a limit of `4` actually gets us 5 labels (the starting one and the four EXTRAS)
+      // If we said in that case how many labels we wanted, it would be `5`, but, pretty much every time we use that number,
+      // we would then need to subtract 1 from it. --JAB (1/14/13)
+      val ExtraXLabelsLimit = 4
+      val ExtraYLabelsLimit = 4
 
-      val xAxis = AxisLabelsFactory.newAxisLabels("Nov", "Dec", "Jan", "Feb", "Mar")
-      xAxis.setAxisStyle(axisStyle)
+      def initChart(line: Line) : LineChart = {
+        val chart = GCharts.newLineChart(dlLine)
+        chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
+        chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 16)
+        chart.setGrid(100d / ExtraXLabelsLimit, 100d / ExtraYLabelsLimit, 3, 2)
+        chart
+      }
 
-      val xAxis2 = AxisLabelsFactory.newAxisLabels("Month", 50.0)
-      xAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 14, AxisTextAlignment.CENTER))
+      def setupDownloadAxes(strs: Seq[String])(chart: LineChart) : LineChart = {
 
-      val yAxis = AxisLabelsFactory.newAxisLabels("", "25", "50", "75", "100")
-      yAxis.setAxisStyle(axisStyle)
+        val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
 
-      val yAxis2 = AxisLabelsFactory.newAxisLabels("Hits", 50.0)
-      yAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 14, AxisTextAlignment.CENTER))
+        def createAxisLabelRange(start: Int, end: Int, extrasLimit: Int, inclusive: Boolean = true) = {
+          val trueEnd = if (inclusive) end else end - 1
+          (start to trueEnd by (end / extrasLimit) dropRight 1) :+ trueEnd
+        }
 
-      chart.addXAxisLabels(xAxis)
-      chart.addXAxisLabels(xAxis2)
-      chart.addYAxisLabels(yAxis)
-      chart.addYAxisLabels(yAxis2)
+        val xStrs = createAxisLabelRange(0, strs.size, ExtraXLabelsLimit, false) map (strs(_))
+        val xAxis = AxisLabelsFactory.newAxisLabels(xStrs.toArray: _*)
+        xAxis.setAxisStyle(axisStyle)
 
-    }
+        val xAxis2 = AxisLabelsFactory.newAxisLabels("Date", 50.0)
+        xAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
 
-    def setupBackground(chart: AbstractAxisChart) {
-      chart.setBackgroundFill(Fills.newSolidFill(newColor("1F1D1D")))
-      val fill = Fills.newLinearGradientFill(0, newColor("363433"), 100)
-      fill.addColorAndOffset(Color.newColor("2E2B2A"), 0)
-      chart.setAreaFill(fill)
-    }
+        val yStrs = createAxisLabelRange(0, 100, ExtraYLabelsLimit) map { case 0 => "" case x => x.toString }
+        val yAxis = AxisLabelsFactory.newAxisLabels(yStrs.toArray: _*)
+        yAxis.setAxisStyle(axisStyle)
 
-    def generateDownloadsChart(ts: Seq[T])(dlLine: Line) : LineChart = {
+        val yAxis2 = AxisLabelsFactory.newAxisLabels("Downloads", 50.0)
+        yAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
 
-      val chart = GCharts.newLineChart(dlLine)
-      chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
-      chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 14)
-      chart.setGrid(25, 25, 3, 2)
+        chart.addXAxisLabels(xAxis)
+        chart.addXAxisLabels(xAxis2)
+        chart.addYAxisLabels(yAxis)
+        chart.addYAxisLabels(yAxis2)
 
-      setupDownloadAxes(ts, chart)
-      setupBackground(chart)
+        chart
 
-      chart
+      }
+
+      def setupBackground(chart: LineChart) : LineChart = {
+        chart.setBackgroundFill(Fills.newSolidFill(newColor("1F1D1D")))
+        val fill = Fills.newLinearGradientFill(0, newColor("363433"), 100)
+        fill.addColorAndOffset(Color.newColor("2E2B2A"), 0)
+        chart.setAreaFill(fill)
+        chart
+      }
+
+      (initChart _ andThen setupDownloadAxes(strs) _ andThen setupBackground _)(dlLine)
 
     }
 
