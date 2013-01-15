@@ -66,7 +66,7 @@ object Grapher {
       chart.setAreaFill(fill)
     }
 
-    def generateDownloadsChart(ts: Seq[T], dlLine: Line) : LineChart = {
+    def generateDownloadsChart(ts: Seq[T])(dlLine: Line) : LineChart = {
 
       val chart = GCharts.newLineChart(dlLine)
       chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
@@ -86,7 +86,7 @@ object Grapher {
 
     // This has been an interesting experiment --JAB (1/14/13)
     import Numeric.Implicits._
-    (generateDownloadsLine _ andThen generateDownloadsChart(entities, _) _  andThen generateURLString _)(counts map (_.toDouble))
+    (generateDownloadsLine _ andThen generateDownloadsChart(entities) _ andThen generateURLString _)(counts map (_.toDouble))
 
   }
 
