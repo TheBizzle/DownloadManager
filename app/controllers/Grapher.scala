@@ -35,7 +35,7 @@ object Grapher {
       line
     }
 
-    def generateDownloadsChart(strs: Seq[String], maxDLCount: Int)(dlLine: Line) : LineChart = {
+    def generateDownloadsChart(strs: Seq[String], maxDLCount: Int) : Line => LineChart = {
 
       // They're "extra" because, a limit of `4` actually gets us 5 labels (the starting one and the four EXTRAS)
       // If we said in that case how many labels we wanted, it would be `5`, but, pretty much every time we use that number,
@@ -44,14 +44,14 @@ object Grapher {
       val ExtraYLabelsLimit = 4
 
       def initChart(line: Line) : LineChart = {
-        val chart = GCharts.newLineChart(dlLine)
+        val chart = GCharts.newLineChart(line)
         chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
         chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 16)
         chart.setGrid(100d / ExtraXLabelsLimit, 100d / ExtraYLabelsLimit, 3, 2)
         chart
       }
 
-      def setupDownloadAxes(strs: Seq[String])(chart: LineChart) : LineChart = {
+      def setupDownloadAxes(strs: Seq[String]) : LineChart => LineChart = {
 
         val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
 
@@ -63,26 +63,37 @@ object Grapher {
             (start to trueEnd by (end / extrasLimit) dropRight 1) :+ trueEnd
         }
 
-        val xStrs = createAxisLabelRange(0, strs.size, ExtraXLabelsLimit, false) map (strs(_))
-        val xAxis = AxisLabelsFactory.newAxisLabels(xStrs.toArray: _*)
-        xAxis.setAxisStyle(axisStyle)
+        def createXMarkers(xs: Seq[String])(chart: LineChart) : LineChart = {
+          val xStrs = createAxisLabelRange(0, xs.size, ExtraXLabelsLimit, false) map (xs(_))
+          val xMarkers = AxisLabelsFactory.newAxisLabels(xStrs.toArray: _*)
+          xMarkers.setAxisStyle(axisStyle)
+          chart.addXAxisLabels(xMarkers)
+          chart
+        }
 
-        val xAxis2 = AxisLabelsFactory.newAxisLabels("Date", 50.0)
-        xAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
+        def createXLabel(chart: LineChart) : LineChart = {
+          val xLabel = AxisLabelsFactory.newAxisLabels("Date", 50.0)
+          xLabel.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
+          chart.addXAxisLabels(xLabel)
+          chart
+        }
 
-        val yStrs = createAxisLabelRange(0, maxDLCount, ExtraYLabelsLimit) map { case 0 => "" case x => x.toString }
-        val yAxis = AxisLabelsFactory.newAxisLabels(yStrs.toArray: _*)
-        yAxis.setAxisStyle(axisStyle)
+        def createYMarkers(maxNum: Int)(chart: LineChart) : LineChart = {
+          val yStrs = createAxisLabelRange(0, maxDLCount, ExtraYLabelsLimit) map { case 0 => "" case x => x.toString }
+          val yMarkers = AxisLabelsFactory.newAxisLabels(yStrs.toArray: _*)
+          yMarkers.setAxisStyle(axisStyle)
+          chart.addYAxisLabels(yMarkers)
+          chart
+        }
 
-        val yAxis2 = AxisLabelsFactory.newAxisLabels("Downloads", 50.0)
-        yAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
+        def createYLabel(chart: LineChart) : LineChart = {
+          val yAxis2 = AxisLabelsFactory.newAxisLabels("Downloads", 50.0)
+          yAxis2.setAxisStyle(AxisStyle.newAxisStyle(WHITE, 16, AxisTextAlignment.CENTER))
+          chart.addYAxisLabels(yAxis2)
+          chart
+        }
 
-        chart.addXAxisLabels(xAxis)
-        chart.addXAxisLabels(xAxis2)
-        chart.addYAxisLabels(yAxis)
-        chart.addYAxisLabels(yAxis2)
-
-        chart
+        (createXMarkers(strs) _ andThen createXLabel _ andThen createYMarkers(maxDLCount) _ andThen createYLabel _)
 
       }
 
@@ -94,7 +105,7 @@ object Grapher {
         chart
       }
 
-      (initChart _ andThen setupDownloadAxes(strs) _ andThen setupBackground _)(dlLine)
+      (initChart _ andThen setupDownloadAxes(strs) andThen setupBackground _)
 
     }
 
@@ -104,7 +115,7 @@ object Grapher {
 
     // This has been an interesting experiment --JAB (1/14/13)
     import Numeric.Implicits._
-    (generateDownloadsLine _ andThen generateDownloadsChart(entities, counts.max.toInt) _ andThen generateURLString _)(counts map (_.toDouble))
+    (generateDownloadsLine _ andThen generateDownloadsChart(entities, counts.max.toInt) andThen generateURLString _)(counts map (_.toDouble))
 
   }
 
