@@ -56,9 +56,12 @@ object Grapher {
 
         val axisStyle = AxisStyle.newAxisStyle(WHITE, 12, AxisTextAlignment.CENTER)
 
-        def createAxisLabelRange(start: Int, end: Int, extrasLimit: Int, inclusive: Boolean = true) = {
-          val trueEnd = if (inclusive) end else end - 1
-          (start to trueEnd by (end / extrasLimit) dropRight 1) :+ trueEnd
+        def createAxisLabelRange(start: Int, end: Int, extrasLimit: Int, endInclusive: Boolean = true) = {
+          val trueEnd = if (endInclusive) end else end - 1
+          if ((trueEnd - start) <= extrasLimit)
+            start to trueEnd
+          else
+            (start to trueEnd by (end / extrasLimit) dropRight 1) :+ trueEnd
         }
 
         val xStrs = createAxisLabelRange(0, strs.size, ExtraXLabelsLimit, false) map (strs(_))
