@@ -11,6 +11,8 @@ import org.joda.time.LocalDate
  * Time: 2:30 PM
  */
 
+//@ Rename file to "Quantum"
+
 case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDate] {
 
   def this(jodaDate: LocalDate) =
@@ -113,7 +115,7 @@ case class SimpleYear(year: Int) extends Quantum[SimpleYear] {
   override protected val Companion = SimpleYear
 
   override def asDateString        = "%d".format(this.year)
-  override def asJodaDate          = new LocalDate(this.year)
+  override def asJodaDate          = new LocalDate(this.year, 1, 1)
   override def <=(that: SimpleYear) = this.year <= that.year
 
 }
