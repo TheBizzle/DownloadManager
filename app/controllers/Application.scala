@@ -4,7 +4,7 @@ import play.api.{ data, mvc }
 import mvc.{ Action, Controller }
 import data.{ Form, Forms }, Forms.{ text, tuple }
 
-import models.download.{ DownloadDBManager, OS, SimpleDate }
+import models.download.{ DownloadDBManager, Quantum, OS, SimpleDate }
 
 object Application extends Controller with Secured {
 
@@ -22,10 +22,11 @@ object Application extends Controller with Secured {
     tuple (
       "os"        -> text,
       "start_day" -> text,
-      "end_day"   -> text
+      "end_day"   -> text,
+      "quantum"   -> text
     ) verifying (
       "Invalid username or password",
-      (_ match { case (os, start, end) => validateData(os, start, end) })
+      (_ match { case (os, start, end, quantum) => validateData(os, start, end, quantum) })
     )
   )
 
@@ -37,11 +38,21 @@ object Application extends Controller with Secured {
           val osSet     = OS.parseMany(criteria._1)
           val startDate = SimpleDate(criteria._2)
           val endDate   = SimpleDate(criteria._3)
-          Grapher.fromStrCountPairs(DownloadDBManager.getDownloadStatsBetweenDates(startDate, endDate, osSet) map { case (q, c) => (q.asDateString, c) })
+          val f         = determineQuantumFunction(criteria._4)
+          Grapher.fromStrCountPairs(f(startDate, endDate, osSet) map { case (q, c) => (q.asDateString, c) })
         }
       )
   }
 
-  private def validateData(os: String, start: String, end: String) = true //@
+  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS]) => Seq[(Quantum[_], Long)]  = {
+    quantumStr match {
+      case "Day"   => DownloadDBManager.getDownloadStatsBetweenDates _
+      case "Month" => { case (s, e, os) => DownloadDBManager.getDownloadStatsBetweenMonths(s.toSimpleMonth, e.toSimpleMonth, os) }
+      case "Year"  => { case (s, e, os) => DownloadDBManager.getDownloadStatsBetweenYears(s.toSimpleMonth.toSimpleYear, e.toSimpleMonth.toSimpleYear, os) }
+      case _       => throw new Exception("Boom!") //@
+    }
+  }
+
+  private def validateData(os: String, start: String, end: String, quantum: String) = true //@
 
 }

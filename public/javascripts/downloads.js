@@ -46,12 +46,31 @@ var submitQuery = function(url) {
 
   };
 
-  var osStr = generateOSStr();
+  var determineQuantum = function() {
+    if ($("#radio-days").is(':checked')) {
+      return "Day";
+    }
+    else if ($("#radio-months").is(':checked')) {
+      return "Month";
+    }
+    else if ($("#radio-years").is(':checked')) {
+      return "Year";
+    }
+    else {
+      return "Error";
+    }
+  };
+
+  var osStr      = generateOSStr();
+  var startDate  = $("#start-day").val();
+  var endDate    = $("#end-day").val();
+  var quantumStr = determineQuantum();
 
   var data = {
     os:        osStr,
-    start_day: $("#start-day").val(),
-    end_day:   $("#end-day").val()
+    start_day: startDate,
+    end_day:   endDate,
+    quantum:   quantumStr
   };
 
   $.ajax({

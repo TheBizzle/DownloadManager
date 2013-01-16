@@ -26,12 +26,18 @@
               From <input type="text" id="start-day" class="date-chooser date-input" /> to <input type="text" id="end-day" class="date-chooser date-input" />
             </div>
 
-            <p>
-              <button type="submit" id="queryBtn" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" style="width: 100%;"
-                      role="button" aria-disabled="false" onclick="submitQuery('@routes.Application.requestData')">
+            <div id="radio-quantum" class="radio-set has-headroom">
+              <input type="radio" id="radio-days"   name="quantum" class="quantum-button"                   /><label for="radio-days"   class="unselectable check-label" style="width: 33%;">By Day</label>
+              <input type="radio" id="radio-months" name="quantum" class="quantum-button" checked="checked" /><label for="radio-months" class="unselectable check-label" style="width: 34%;">By Month</label>
+              <input type="radio" id="radio-years"  name="quantum" class="quantum-button"                   /><label for="radio-years"  class="unselectable check-label" style="width: 33%;">By Year</label>
+            </div>
+
+            <div class="has-headroom" style="padding: 8px; background-color: #33B546; border-radius: 10px 10px 10px 10px;">
+              <button type="submit" id="queryBtn" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+                      style="width: 100%; border: 3px solid black" role="button" aria-disabled="false" onclick="submitQuery('@routes.Application.requestData')">
                 <span class="ui-button-text">Query</span>
               </button>
-            </p>
+            </div>
 
           </td>
           <td style="width: 10%;"><div style="height: 250px; width: 50%; border-right: 3px solid #AFAFAF"></div></td>
