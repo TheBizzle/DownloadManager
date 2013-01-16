@@ -24,37 +24,47 @@ object DownloadDBManager {
   import AnormExtras._
 
   //@ Maybe add some monadic error-handling here at some point (regarding the size of the `start to end` collection)?
-  def getDownloadStatsBetween(start: SimpleDate, end: SimpleDate) : Seq[(SimpleDate, Long)] =
-    start to end map { case date @ SimpleDate(day, month, year) => (date, getDLCountByYMD(year, month, day)) }
+  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set()) : Seq[(SimpleDate, Long)] =
+    start to end map { case date @ SimpleDate(day, month, year) => (date, getDLCountByYMD(year, month, day, osSet)) }
 
-  def getDownloadStatsBetween(start: SimpleMonth, end: SimpleMonth) : Seq[(SimpleMonth, Long)] =
-    start to end map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m)) }
+  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set()) : Seq[(SimpleMonth, Long)] =
+    start to end map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m, osSet)) }
 
-  def getDownloadStatsBetween(start: SimpleYear, end: SimpleYear) : Seq[(SimpleYear, Long)] =
-    start to end map { case year @ SimpleYear(y) => (year, getDLCountByY(y)) }
+  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set()) : Seq[(SimpleYear, Long)] =
+    start to end map { case year @ SimpleYear(y) => (year, getDLCountByY(y, osSet)) }
 
-  def getDLCountByY(year: Int) : Long = {
+  def getDLCountByY(year: Int, osSet: Set[OS] = Set()) : Long = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserDownloads._
+      import DBConstants.{ DownloadFiles => DFConstants }
+      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
       parseCount(SQL (
         """
           |SELECT %s FROM %s
-          |WHERE %s = {year};
-        """.stripMargin.format(DBConstants.CountKey, TableName, YearKey) //@ Do want string interpolation!
+          |LEFT JOIN %s ON %s.%s = %s.%s
+          |WHERE %s = {year}%s;
+        """.stripMargin.format(DBConstants.CountKey, TableName,
+                               DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
+                               YearKey, osClause) //@ Do want string interpolation!
       ) on (
         "year" -> year
       ))
     }
   }
 
-  def getDLCountByYM(year: Int, month: Int) : Long = {
+  def getDLCountByYM(year: Int, month: Int, osSet: Set[OS] = Set()) : Long = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
+      import DBConstants.{ DownloadFiles => DFConstants }
+      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
       parseCount(SQL (
         """
           |SELECT %s FROM %s
-          |WHERE %s = {year} AND %s = {month};
-        """.stripMargin.format(DBConstants.CountKey, TableName, YearKey, MonthKey)
+          |LEFT JOIN %s ON %s.%s = %s.%s
+          |WHERE %s = {year} AND %s = {month}%s;
+        """.stripMargin.format(DBConstants.CountKey, TableName,
+                               DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
+                               YearKey, MonthKey, osClause)
       ) on (
         "year"  -> year,
         "month" -> month
@@ -62,14 +72,19 @@ object DownloadDBManager {
     }
   }
 
-  def getDLCountByYMD(year: Int, month: Int, day: Int) : Long = {
+  def getDLCountByYMD(year: Int, month: Int, day: Int, osSet: Set[OS] = Set()) : Long = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
+      import DBConstants.{ DownloadFiles => DFConstants }
+      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
       parseCount(SQL (
         """
           |SELECT %s FROM %s
-          |WHERE %s = {year} AND %s = {month} AND %s = {day};
-        """.stripMargin.format(DBConstants.CountKey, TableName, YearKey, MonthKey, DayKey)
+          |LEFT JOIN %s ON %s.%s = %s.%s
+          |WHERE %s = {year} AND %s = {month} AND %s = {day}%s;
+        """.stripMargin.format(DBConstants.CountKey, TableName,
+                               DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
+                               YearKey, MonthKey, DayKey, osClause)
       ) on (
         "year"  -> year,
         "month" -> month,
@@ -114,7 +129,7 @@ object DownloadDBManager {
     sql as {
       long(IDKey) ~ str(VersionKey) ~ str(OSKey) ~ long(SizeKey) ~ str(PathKey) map {
         case id ~ version ~ os ~ size ~ path =>
-          DownloadFile(Option(id), version, OS(os), size, path)
+          DownloadFile(Option(id), version, OS.parseOne(os), size, path)
         case _ => raiseDBAccessException
       } *
     }

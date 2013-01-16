@@ -14,7 +14,39 @@ window.onload = function() {
 
 var submitQuery = function(url) {
 
-  var osStr = ""
+  var generateOSStr = function() {
+
+    var maybeWithSep = function(str) {
+      if (str) {
+        return str + "|";
+      }
+      else {
+        return "";
+      }
+    };
+
+    var append = function(toBeAdded, was) {
+      return maybeWithSep(was) + toBeAdded;
+    };
+
+    var maybeAppendStr = function(elemID, osName, str) {
+      if($("#" + elemID).is(':checked')) {
+        return append(osName, str);
+      }
+      else {
+        return str;
+      }
+    };
+
+    var maybeWithWindowsStr = maybeAppendStr("check-windows", "Windows", "");
+    var maybeWithMacStr     = maybeAppendStr("check-mac",     "Mac",     maybeWithWindowsStr);
+    var maybeWithLinuxStr   = maybeAppendStr("check-linux",   "Linux",   maybeWithMacStr);
+
+    return maybeWithLinuxStr;
+
+  };
+
+  var osStr = generateOSStr();
 
   var data = {
     os:        osStr,
@@ -30,6 +62,7 @@ var submitQuery = function(url) {
       $("#query-graph").attr('src', '/assets/graphs/' + result);
     }
   });
+
 };
 
 // Heavily based on code from Samuel Meddows (http://stackoverflow.com/a/4929629/1116979)
