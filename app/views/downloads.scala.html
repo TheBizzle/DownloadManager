@@ -16,12 +16,6 @@
         <tr>
           <td style="width: 45%;">
 
-            <div id="check-os" class="check-set">
-              <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label" style="width: 33%;">Windows</label>
-              <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label" style="width: 34%;">Mac OS</label>
-              <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label" style="width: 33%;">Linux</label>
-            </div>
-
             <div class="round-bordered has-headroom" style="padding: 15px 15px 15px 50px;">
               From <input type="text" id="start-day" class="date-chooser date-input" /> to <input type="text" id="end-day" class="date-chooser date-input" />
             </div>
@@ -30,6 +24,17 @@
               <input type="radio" id="radio-days"   name="quantum" class="quantum-button"                   /><label for="radio-days"   class="unselectable check-label" style="width: 33%;">By Day</label>
               <input type="radio" id="radio-months" name="quantum" class="quantum-button" checked="checked" /><label for="radio-months" class="unselectable check-label" style="width: 34%;">By Month</label>
               <input type="radio" id="radio-years"  name="quantum" class="quantum-button"                   /><label for="radio-years"  class="unselectable check-label" style="width: 33%;">By Year</label>
+            </div>
+
+            <div id="radio-graph-type" class="radio-set has-headroom">
+              <input type="radio" id="radio-discrete"   name="graph-type" class="graph-type-button" checked="checked" /><label for="radio-discrete"   class="unselectable check-label" style="width: 50%;">Discrete Graph</label>
+              <input type="radio" id="radio-cumulative" name="graph-type" class="graph-type-button"                   /><label for="radio-cumulative" class="unselectable check-label" style="width: 50%;">Cumulative Graph</label>
+            </div>
+
+            <div id="check-os" class="check-set has-headroom">
+              <input type="checkbox" id="check-windows" name="os" class="check-button os-button" /><label for="check-windows" class="unselectable check-label" style="width: 33%;">Windows</label>
+              <input type="checkbox" id="check-mac"     name="os" class="check-button os-button" /><label for="check-mac"     class="unselectable check-label" style="width: 34%;">Mac OS</label>
+              <input type="checkbox" id="check-linux"   name="os" class="check-button os-button" /><label for="check-linux"   class="unselectable check-label" style="width: 33%;">Linux</label>
             </div>
 
             <div class="has-headroom" style="padding: 8px; background-color: #33B546; border-radius: 10px 10px 10px 10px;">

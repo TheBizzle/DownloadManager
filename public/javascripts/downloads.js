@@ -61,16 +61,30 @@ var submitQuery = function(url) {
     }
   };
 
-  var osStr      = generateOSStr();
+  var determineGraphType = function() {
+    if ($("#radio-discrete").is(':checked')) {
+      return "Discrete";
+    }
+    else if ($("#radio-cumulative").is(':checked')) {
+      return "Cumulative";
+    }
+    else {
+      return "Error";
+    }
+  };
+
   var startDate  = $("#start-day").val();
   var endDate    = $("#end-day").val();
   var quantumStr = determineQuantum();
+  var graphType  = determineGraphType();
+  var osStr      = generateOSStr();
 
   var data = {
-    os:        osStr,
-    start_day: startDate,
-    end_day:   endDate,
-    quantum:   quantumStr
+    start_day:  startDate,
+    end_day:    endDate,
+    quantum:    quantumStr,
+    graph_type: graphType,
+    os:         osStr
   };
 
   $.ajax({
