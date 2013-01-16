@@ -11,8 +11,6 @@ import org.joda.time.LocalDate
  * Time: 2:30 PM
  */
 
-//@ Rename file to "Quantum"
-
 case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDate] {
 
   def this(jodaDate: LocalDate) =
