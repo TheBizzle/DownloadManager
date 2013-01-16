@@ -24,7 +24,8 @@ object Grapher {
   private def generateChartURL[N : Numeric](dataPairs: Seq[(String, N)]) : String = {
 
     def generateDownloadsLine(data: Seq[Double]) : Line = {
-      val line = Plots.newLine(DataUtil.scale(data.toArray: _*), SKYBLUE, "Downloads")
+      val dataArr = if (data.max == 0) Data.newData(data.toArray: _*) else DataUtil.scale(data.toArray: _*)
+      val line    = Plots.newLine(dataArr, SKYBLUE, "Downloads")
       line.setLineStyle(LineStyle.newLineStyle(3, 1, 0))
       line.addShapeMarkers(DIAMOND, SKYBLUE, 12)
       line.addShapeMarkers(DIAMOND, WHITE, 8)
