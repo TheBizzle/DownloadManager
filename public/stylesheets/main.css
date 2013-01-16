@@ -50,3 +50,7 @@ body {
   border: 6px solid #AFAFAF;
   border-radius: 10px 10px 10px 10px;
 }
+
+.has-headroom {
+  margin-top: 30px;
+}
