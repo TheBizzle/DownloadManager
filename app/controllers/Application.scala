@@ -27,7 +27,7 @@ object Application extends Controller with Secured {
       "quantum"    -> text,
       "graph_type" -> text
     ) verifying (
-      "Invalid username or password",
+      "Invalid query data",
       (_ match { case (os, start, end, quantum, graphType) => validateData(os, start, end, quantum, graphType) })
     )
   )
