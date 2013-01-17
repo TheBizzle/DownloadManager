@@ -37,7 +37,7 @@ object DownloadDBManager {
     DB.withConnection { implicit connect =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
-      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")") //@ Refactor; unify
+      val osClause       = generateOSesClause(osSet)
       val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
         """
@@ -57,7 +57,7 @@ object DownloadDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
-      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
+      val osClause       = generateOSesClause(osSet)
       val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
         """
@@ -78,7 +78,7 @@ object DownloadDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
-      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
+      val osClause       = generateOSesClause(osSet)
       val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
         """
@@ -137,6 +137,9 @@ object DownloadDBManager {
       } *
     }
   }
+
+  private def generateOSesClause(osSet: Set[OS]) : String =
+    generateQueryConstraintClause(osSet, DBConstants.DownloadFiles.OSKey)
 
   private def generateVersionsClause(versions: Set[String]) : String =
     generateQueryConstraintClause(versions, DBConstants.DownloadFiles.VersionKey)
