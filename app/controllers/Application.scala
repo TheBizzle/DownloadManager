@@ -25,10 +25,11 @@ object Application extends Controller with Secured {
       "start_day"  -> text,
       "end_day"    -> text,
       "quantum"    -> text,
-      "graph_type" -> text
+      "graph_type" -> text,
+      "versions"   -> text
     ) verifying (
       "Invalid query data",
-      (_ match { case (os, start, end, quantum, graphType) => validateData(os, start, end, quantum, graphType) })
+      (_ match { case (os, start, end, quantum, graphType, versions) => validateData(os, start, end, quantum, graphType, versions) })
     )
   )
 
@@ -43,8 +44,9 @@ object Application extends Controller with Secured {
           val endDate     = SimpleDate(criteria._3)
           val quantumFunc = determineQuantumFunction(criteria._4)
           val graphType   = GraphType(criteria._5)
+          val versions    = parseVersions(criteria._6)
 
-          val rawData     = quantumFunc(startDate, endDate, osSet) map { case (q, c) => (q.asDateString, c) }
+          val rawData     = quantumFunc(startDate, endDate, osSet, versions) map { case (q, c) => (q.asDateString, c) }
           val refinedData = prepareData(rawData, graphType)
 
           Grapher.fromStrCountPairs(refinedData)
@@ -53,6 +55,12 @@ object Application extends Controller with Secured {
       )
   }
 
+  private def parseVersions(s: String) : Set[String] =
+    if (s == "all")
+      Set()
+    else
+      s split '|' toSet
+
   private def prepareData(data: Seq[(String, Long)], gt: GraphType) : (Seq[(String, Long)]) = {
     gt match {
       case Discrete   => data
@@ -60,15 +68,19 @@ object Application extends Controller with Secured {
     }
   }
 
-  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS]) => Seq[(Quantum[_], Long)]  = {
+  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS], Set[String]) => Seq[(Quantum[_], Long)]  = {
     quantumStr.toLowerCase match {
-      case "day"   => DownloadDBManager.getDownloadStatsBetweenDates _
-      case "month" => { case (s, e, os) => DownloadDBManager.getDownloadStatsBetweenMonths(s.toSimpleMonth, e.toSimpleMonth, os) }
-      case "year"  => { case (s, e, os) => DownloadDBManager.getDownloadStatsBetweenYears(s.toSimpleMonth.toSimpleYear, e.toSimpleMonth.toSimpleYear, os) }
-      case _       => throw new Exception("Boom!") //@
+      case "day" =>
+        DownloadDBManager.getDownloadStatsBetweenDates _
+      case "month" =>
+        { case (s, e, os, versions) => DownloadDBManager.getDownloadStatsBetweenMonths(s.toSimpleMonth, e.toSimpleMonth, os, versions) }
+      case "year" =>
+        { case (s, e, os, versions) => DownloadDBManager.getDownloadStatsBetweenYears(s.toSimpleMonth.toSimpleYear, e.toSimpleMonth.toSimpleYear, os, versions) }
+      case _ =>
+        throw new Exception("Boom!") //@
     }
   }
 
-  private def validateData(os: String, start: String, end: String, quantum: String, graphType: String) = true //@
+  private def validateData(os: String, start: String, end: String, quantum: String, graphType: String, versions: String) = true //@
 
 }

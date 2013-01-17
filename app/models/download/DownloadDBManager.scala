@@ -24,47 +24,49 @@ object DownloadDBManager {
   import AnormExtras._
 
   //@ Maybe add some monadic error-handling here at some point (regarding the size of the `start to end` collection)?
-  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set()) : Seq[(SimpleDate, Long)] =
-    start to end map { case date @ SimpleDate(day, month, year) => (date, getDLCountByYMD(year, month, day, osSet)) }
+  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Seq[(SimpleDate, Long)] =
+    start to end map { case date @ SimpleDate(day, month, year) => (date, getDLCountByYMD(year, month, day, osSet, versions)) }
 
-  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set()) : Seq[(SimpleMonth, Long)] =
-    start to end map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m, osSet)) }
+  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Seq[(SimpleMonth, Long)] =
+    start to end map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m, osSet, versions)) }
 
-  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set()) : Seq[(SimpleYear, Long)] =
-    start to end map { case year @ SimpleYear(y) => (year, getDLCountByY(y, osSet)) }
+  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Seq[(SimpleYear, Long)] =
+    start to end map { case year @ SimpleYear(y) => (year, getDLCountByY(y, osSet, versions)) }
 
-  def getDLCountByY(year: Int, osSet: Set[OS] = Set()) : Long = {
+  def getDLCountByY(year: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
-      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
+      val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")") //@ Refactor; unify
+      val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
         """
           |SELECT %s FROM %s
           |LEFT JOIN %s ON %s.%s = %s.%s
-          |WHERE %s = {year}%s;
+          |WHERE %s = {year}%s%s;
         """.stripMargin.format(DBConstants.CountKey, TableName,
                                DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
-                               YearKey, osClause) //@ Do want string interpolation!
+                               YearKey, osClause, versionsClause) //@ Do want string interpolation!
       ) on (
         "year" -> year
       ))
     }
   }
 
-  def getDLCountByYM(year: Int, month: Int, osSet: Set[OS] = Set()) : Long = {
+  def getDLCountByYM(year: Int, month: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
       val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
+      val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
         """
           |SELECT %s FROM %s
           |LEFT JOIN %s ON %s.%s = %s.%s
-          |WHERE %s = {year} AND %s = {month}%s;
+          |WHERE %s = {year} AND %s = {month}%s%s;
         """.stripMargin.format(DBConstants.CountKey, TableName,
                                DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
-                               YearKey, MonthKey, osClause)
+                               YearKey, MonthKey, osClause, versionsClause)
       ) on (
         "year"  -> year,
         "month" -> month
@@ -72,19 +74,20 @@ object DownloadDBManager {
     }
   }
 
-  def getDLCountByYMD(year: Int, month: Int, day: Int, osSet: Set[OS] = Set()) : Long = {
+  def getDLCountByYMD(year: Int, month: Int, day: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
       val osClause = if (osSet.isEmpty) "" else osSet map (os => """ %s = "%s"""".format(DFConstants.OSKey, os)) mkString(" AND (", " OR", ")")
+      val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
         """
           |SELECT %s FROM %s
           |LEFT JOIN %s ON %s.%s = %s.%s
-          |WHERE %s = {year} AND %s = {month} AND %s = {day}%s;
+          |WHERE %s = {year} AND %s = {month} AND %s = {day}%s%s;
         """.stripMargin.format(DBConstants.CountKey, TableName,
                                DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
-                               YearKey, MonthKey, DayKey, osClause)
+                               YearKey, MonthKey, DayKey, osClause, versionsClause)
       ) on (
         "year"  -> year,
         "month" -> month,
@@ -134,6 +137,15 @@ object DownloadDBManager {
       } *
     }
   }
+
+  private def generateVersionsClause(versions: Set[String]) : String =
+    generateQueryConstraintClause(versions, DBConstants.DownloadFiles.VersionKey)
+
+  private def generateQueryConstraintClause[T <% String](xs: Iterable[T], key: String) : String =
+    if (xs.isEmpty)
+      ""
+    else
+      xs map (x => """%s = "%s"""".format(key, x)) mkString(" AND (", " OR ", ")")
 
   def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
   def update[T <% Updatable]  (update: T)                                   { update.update() }
