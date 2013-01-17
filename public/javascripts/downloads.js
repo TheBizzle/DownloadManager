@@ -17,12 +17,10 @@ var submitQuery = function(url) {
   var generateOSStr = function() {
 
     var maybeWithSep = function(str) {
-      if (str) {
+      if (str)
         return str + "|";
-      }
-      else {
+      else
         return "";
-      }
     };
 
     var append = function(toBeAdded, was) {
@@ -30,12 +28,10 @@ var submitQuery = function(url) {
     };
 
     var maybeAppendStr = function(elemID, osName, str) {
-      if($("#" + elemID).is(':checked')) {
+      if($("#" + elemID).is(':checked'))
         return append(osName, str);
-      }
-      else {
+      else
         return str;
-      }
     };
 
     var maybeWithWindowsStr = maybeAppendStr("check-windows", "Windows", "");
@@ -47,30 +43,23 @@ var submitQuery = function(url) {
   };
 
   var determineQuantum = function() {
-    if ($("#radio-days").is(':checked')) {
+    if ($("#radio-days").is(':checked'))
       return "Day";
-    }
-    else if ($("#radio-months").is(':checked')) {
+    else if ($("#radio-months").is(':checked'))
       return "Month";
-    }
-    else if ($("#radio-years").is(':checked')) {
+    else if ($("#radio-years").is(':checked'))
       return "Year";
-    }
-    else {
+    else
       return "Error";
-    }
   };
 
   var determineGraphType = function() {
-    if ($("#radio-discrete").is(':checked')) {
+    if ($("#radio-discrete").is(':checked'))
       return "Discrete";
-    }
-    else if ($("#radio-cumulative").is(':checked')) {
+    else if ($("#radio-cumulative").is(':checked'))
       return "Cumulative";
-    }
-    else {
+    else
       return "Error";
-    }
   };
 
   var startDate  = $("#start-day").val();
