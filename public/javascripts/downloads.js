@@ -1,6 +1,7 @@
 var onLoad = function() {
   $('#start-day').val("01/01/2001");
   $('#end-day').val(getTodaysDateString());
+  populateVersionList();
 };
 
 var funcs = new Array();
@@ -14,18 +15,18 @@ window.onload = function() {
 
 var submitQuery = function(url) {
 
+  var maybeWithSep = function(str) {
+    if (str)
+      return str + "|";
+    else
+      return "";
+  };
+
+  var append = function(toBeAdded, was) {
+    return maybeWithSep(was) + toBeAdded;
+  };
+
   var generateOSStr = function() {
-
-    var maybeWithSep = function(str) {
-      if (str)
-        return str + "|";
-      else
-        return "";
-    };
-
-    var append = function(toBeAdded, was) {
-      return maybeWithSep(was) + toBeAdded;
-    };
 
     var maybeAppendStr = function(elemID, osName, str) {
       if($("#" + elemID).is(':checked'))
@@ -62,18 +63,43 @@ var submitQuery = function(url) {
       return "Error";
   };
 
+  var generateVersionStr = function() {
+
+    if ($('#check-all').is(':checked'))
+      return "all";
+    else {
+
+      var s = '';
+
+      $('#check-version > .check-label').each(function() {
+          var label  = $(this);
+          var button = $("#" + label.attr("for"));
+          if (button.is(':checked')) {
+              var labelText = label.text();
+              s = append(labelText, s);
+          }
+      });
+
+      return s;
+
+    }
+
+  };
+
   var startDate  = $("#start-day").val();
   var endDate    = $("#end-day").val();
   var quantumStr = determineQuantum();
   var graphType  = determineGraphType();
   var osStr      = generateOSStr();
+  var versionStr = generateVersionStr();
 
   var data = {
     start_day:  startDate,
     end_day:    endDate,
     quantum:    quantumStr,
     graph_type: graphType,
-    os:         osStr
+    os:         osStr,
+    versions:   versionStr
   };
 
   $.ajax({
@@ -105,3 +131,33 @@ var getTodaysDateString = function() {
   return mm + "/" + dd + "/" + yyyy;
 
 };
+
+var populateVersionList = function() {
+  $.get("/versions", function(x) {
+
+    var versionArr = JSON.parse(x);
+    var elem = $("#check-version");
+
+    for (var i = 0; i < versionArr.length; i++) {
+      elem.append('<input type="checkbox" id="check-' + i + '" name="version" class="check-button version-button" /><label for="check-' + i + '" class="unselectable check-label">' + versionArr[i] + '</label>');
+    }
+
+    $('#check-version > .check-button').each(function() {
+      var elem = $(this);
+      elem.button();
+    });
+
+    $('#check-version > .check-label').each(function() {
+      var elem = $(this);
+      elem.click(function() {
+        var btn = $("#" + elem.attr("for"));
+        btn[0].checked = !btn[0].checked;
+        btn.button("refresh");
+        btn.change();
+        return false;
+      });
+    });
+
+  });
+};
+
