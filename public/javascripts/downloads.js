@@ -139,23 +139,50 @@ var populateVersionList = function() {
     var elem = $("#check-version");
 
     for (var i = 0; i < versionArr.length; i++) {
-      elem.append('<input type="checkbox" id="check-' + i + '" name="version" class="check-button version-button" /><label for="check-' + i + '" class="unselectable check-label">' + versionArr[i] + '</label>');
+      elem.append('<input type="checkbox" id="check-' + i + '" name="version" class="check-button version-button dynamic-check-button" /><label for="check-' + i + '" class="unselectable check-label dynamic-check-label">' + versionArr[i] + '</label>');
     }
 
-    $('#check-version > .check-button').each(function() {
+    $('#check-version > .dynamic-check-button').each(function() {
       var elem = $(this);
       elem.button();
     });
 
-    $('#check-version > .check-label').each(function() {
+    $('#check-version > .dynamic-check-label').each(function() {
       var elem = $(this);
       elem.click(function() {
+
         var btn = $("#" + elem.attr("for"));
         btn[0].checked = !btn[0].checked;
         btn.button("refresh");
         btn.change();
+
+        var checkAll = $('#check-all');
+        checkAll.attr('checked', false);
+        checkAll.button("refresh");
+        checkAll.change();
+
         return false;
+
       });
+    });
+
+    var checkAll = $("#check-all");
+    checkAll.button();
+    $("#check-all-label").click(function () {
+
+      checkAll.attr('checked', !checkAll.is(":checked"));
+      checkAll.button("refresh");
+      checkAll.change();
+
+      $('#check-version > .dynamic-check-button').each(function() {
+        var otherBtn = $(this);
+        otherBtn.attr('checked', false);
+        otherBtn.button("refresh");
+        otherBtn.change();
+      });
+
+      return false;
+
     });
 
   });
