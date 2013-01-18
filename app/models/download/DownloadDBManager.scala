@@ -98,16 +98,16 @@ object DownloadDBManager {
 
   def getFileByID(id: Long) : ValidationNEL[String, DownloadFile] = {
     DB.withConnection { implicit connection =>
-    import DBConstants.DownloadFiles._
-    val opt = parseDownloadFiles(SQL (
-      """
-        |SELECT * FROM %s
-        |WHERE %s = {id};
-      """.stripMargin.format(TableName, IDKey)
-    ) on (
-      "id" -> id
-    )).headOption
-    opt map (_.successNel[String]) getOrElse ("No download file found with id %s".format(id).failNel)
+      import DBConstants.DownloadFiles._
+      val opt = parseDownloadFiles(SQL (
+        """
+          |SELECT * FROM %s
+          |WHERE %s = {id};
+        """.stripMargin.format(TableName, IDKey)
+      ) on (
+        "id" -> id
+      )).headOption
+      opt map (_.successNel[String]) getOrElse ("No download file found with id %s".format(id).failNel)
   }}
 
   def getAllVersions : Seq[String] = {

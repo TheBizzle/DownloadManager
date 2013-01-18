@@ -60,7 +60,7 @@ object Application extends Controller with Secured {
   }
 
   private def parseVersions(s: String) : Set[String] =
-    if (s == "all")
+    if (s.toLowerCase == "all")
       Set()
     else
       s split '|' toSet
