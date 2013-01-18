@@ -23,8 +23,11 @@
               <input type="radio" id="radio-cumulative" name="graph-type" class="graph-type-button"                   /><label for="radio-cumulative" class="unselectable check-label" style="width: 50%;">Cumulative Graph</label>
             </div>
 
-            <div id="check-version" class="has-headroom" style="width: 100%;">
-              <input type="checkbox" id="check-all" name="version" class="version-button" checked="checked" /><label for="check-all" id="check-all-label" class="unselectable">All Versions</label>
+            <div id="check-version" style="width: 100%; text-align: center; margin-top: 40px;">
+              <div style="padding: 6px; display: inline-block; background-color: #288DB1; border-radius: 10px 10px 10px 10px;">
+                <input type="checkbox" id="check-all" name="version" class="version-button" checked="checked" /><label for="check-all" id="check-all-label" class="unselectable" style="border: 3px solid black">All Versions</label>
+              </div>
+              <br>
             </div>
 
             <div id="check-os" class="check-set has-headroom">
@@ -41,7 +44,7 @@
             </div>
 
           </td>
-          <td style="width: 10%;"><div style="height: 250px; width: 50%; border-right: 3px solid #AFAFAF"></div></td>
+          <td style="width: 10%;"><div style="height: 550px; width: 50%; border-right: 3px solid #AFAFAF"></div></td>
           <td style="width: 40%;">
             <img id="query-graph" src='@routes.Assets.at("images/no-graph.png")' class="round-bordered" alt="Graph">
           </td>
