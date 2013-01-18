@@ -18,6 +18,10 @@ object Application extends Controller with Secured {
       Ok(views.html.downloads(username))
   }
 
+  def versions = withAuth {
+    username => implicit request =>
+      Ok(DownloadDBManager.getAllVersions.mkString("[\"", "\", \"", "\"]"))
+  }
 
   val dataForm = Form (
     tuple (

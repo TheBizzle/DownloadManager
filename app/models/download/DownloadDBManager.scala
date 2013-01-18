@@ -110,6 +110,18 @@ object DownloadDBManager {
     opt map (_.successNel[String]) getOrElse ("No download file found with id %s".format(id).failNel)
   }}
 
+  def getAllVersions : Seq[String] = {
+    DB.withConnection { implicit connection =>
+      import DBConstants.DownloadFiles._
+      parseStrings(SQL (
+        """
+          |SELECT DISTINCT %s FROM %s
+          |ORDER BY %s DESC;
+        """.stripMargin.format(VersionKey, TableName, VersionKey)
+      ))(VersionKey)
+    }
+  }
+
   private def parseCount(sql: SimpleSql[Row])(implicit connection: Connection) : Long =
     sql as { long(DBConstants.CountKey).single }
 
@@ -138,8 +150,15 @@ object DownloadDBManager {
     }
   }
 
-  private def generateOSesClause(osSet: Set[OS]) : String =
+  private def parseStrings(sql: SimpleSql[Row])(key: String)(implicit connection: Connection) : Seq[String] = {
+    val Key = key
+    sql as { str(Key) * }
+  }
+
+  private def generateOSesClause(osSet: Set[OS]) : String = {
+    implicit val f = (os: OS) => os.toString
     generateQueryConstraintClause(osSet, DBConstants.DownloadFiles.OSKey)
+  }
 
   private def generateVersionsClause(versions: Set[String]) : String =
     generateQueryConstraintClause(versions, DBConstants.DownloadFiles.VersionKey)
