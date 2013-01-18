@@ -72,12 +72,12 @@ var submitQuery = function(url) {
       var s = '';
 
       $('#check-version > .check-label').each(function() {
-          var label  = $(this);
-          var button = $("#" + label.attr("for"));
-          if (button.is(':checked')) {
-              var labelText = label.text();
-              s = append(labelText, s);
-          }
+        var label  = $(this);
+        var button = $("#" + label.attr("for"));
+        if (button.is(':checked')) {
+          var labelText = label.text();
+          s = append(labelText, s);
+        }
       });
 
       return s;
