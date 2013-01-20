@@ -1,11 +1,16 @@
 package controllers
 
-import play.api.{ data, mvc }
-import mvc.{ Action, Controller }
-import data.{ Form, Forms }, Forms.{ text, tuple }
+import
+  play.api.{ data, mvc },
+    data.{ Form, Forms },
+      Forms.{ text, tuple },
+    mvc.{ Action, Controller }
 
-import models.download.{ DownloadDBManager, GraphType, Quantum, OS, SimpleDate }
-import GraphType.{ Cumulative, Discrete }
+import
+  models.download.{ DownloadDBManager, GraphType, Quantum, OS, SimpleDate }
+
+import
+  GraphType.{ Cumulative, Discrete }
 
 object Application extends Controller with Secured {
 

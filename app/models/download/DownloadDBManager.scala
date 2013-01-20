@@ -1,14 +1,21 @@
 package models.download
 
-import anorm._
-import anorm.SqlParser._
-import play.api.db.DB
+import
+  anorm._,
+    SqlParser._
 
-import java.sql.Connection
+import
+  play.api.db.DB
 
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
+import
+  java.sql.Connection
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import
+  com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
+
+import
+  scalaz.{ Scalaz, ValidationNEL },
+    Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.

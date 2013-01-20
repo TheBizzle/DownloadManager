@@ -1,10 +1,13 @@
 package controllers
 
-import play.api.{ data, mvc }
-import mvc.{ Action, Controller, Security }
-import data.{ Form, Forms }, Forms.{ text, tuple }
+import
+  play.api.{ data, mvc },
+    data.{ Form, Forms },
+      Forms.{ text, tuple },
+    mvc.{ Action, Controller, Security }
 
-import models.auth.AuthDBManager
+import
+  models.auth.AuthDBManager
 
 /**
  * Created with IntelliJ IDEA.

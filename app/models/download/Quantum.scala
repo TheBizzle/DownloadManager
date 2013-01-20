@@ -1,8 +1,10 @@
 package models.download
 
-import scala.annotation.tailrec
+import
+  scala.annotation.tailrec
 
-import org.joda.time.LocalDate
+import
+  org.joda.time.LocalDate
 
 /**
  * Created with IntelliJ IDEA.

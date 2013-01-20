@@ -1,8 +1,11 @@
 package models.download
 
-import java.io.File
+import
+  java.io.File
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import
+  scalaz.{ Scalaz, ValidationNEL },
+    Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.

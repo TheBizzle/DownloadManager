@@ -1,6 +1,7 @@
 package controllers
 
-import play.api.mvc.{ Action, AnyContent, Request, RequestHeader, Result, Results, Security }
+import
+  play.api.mvc.{ Action, AnyContent, Request, RequestHeader, Result, Results, Security }
 
 /**
  * Created with IntelliJ IDEA.

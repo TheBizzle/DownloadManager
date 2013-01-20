@@ -1,6 +1,9 @@
 package controllers
 
-import com.googlecode.charts4j._, Color.{ newColor, SKYBLUE, WHITE }, Shape.DIAMOND
+import
+  com.googlecode.charts4j._,
+    Color.{ newColor, SKYBLUE, WHITE },
+    Shape.DIAMOND
 
 /**
  * Created with IntelliJ IDEA.

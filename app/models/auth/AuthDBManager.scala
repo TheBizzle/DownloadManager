@@ -1,12 +1,16 @@
 package models.auth
 
-import anorm._
-import anorm.SqlParser._
-import play.api.db.DB
+import
+  anorm._,
+    SqlParser._,
+  play.api.db.DB
 
-import org.mindrot.jbcrypt.BCrypt
+import
+  org.mindrot.jbcrypt.BCrypt
 
-import scalaz.{ Scalaz, ValidationNEL }, Scalaz.ToValidationV
+import
+  scalaz.{ Scalaz, ValidationNEL },
+    Scalaz.ToValidationV
 
 /**
  * Created with IntelliJ IDEA.
