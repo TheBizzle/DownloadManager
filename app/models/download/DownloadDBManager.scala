@@ -47,13 +47,11 @@ object DownloadDBManager {
       val osClause       = generateOSesClause(osSet)
       val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
-        """
-          |SELECT %s FROM %s
-          |LEFT JOIN %s ON %s.%s = %s.%s
-          |WHERE %s = {year}%s%s;
-        """.stripMargin.format(DBConstants.CountKey, TableName,
-                               DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
-                               YearKey, osClause, versionsClause) //@ Do want string interpolation!
+       s"""
+          |SELECT ${DBConstants.CountKey} FROM $TableName
+          |LEFT JOIN ${DFConstants.TableName} ON $TableName.$FileIDKey = ${DFConstants.TableName}.${DFConstants.IDKey}
+          |WHERE $YearKey = {year}$osClause$versionsClause;
+        """.stripMargin
       ) on (
         "year" -> year
       ))
@@ -67,13 +65,11 @@ object DownloadDBManager {
       val osClause       = generateOSesClause(osSet)
       val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
-        """
-          |SELECT %s FROM %s
-          |LEFT JOIN %s ON %s.%s = %s.%s
-          |WHERE %s = {year} AND %s = {month}%s%s;
-        """.stripMargin.format(DBConstants.CountKey, TableName,
-                               DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
-                               YearKey, MonthKey, osClause, versionsClause)
+       s"""
+          |SELECT ${DBConstants.CountKey} FROM $TableName
+          |LEFT JOIN ${DFConstants.TableName} ON $TableName.$FileIDKey = ${DFConstants.TableName}.${DFConstants.IDKey}
+          |WHERE $YearKey = {year} AND $MonthKey = {month}$osClause$versionsClause;
+        """.stripMargin
       ) on (
         "year"  -> year,
         "month" -> month
@@ -88,13 +84,11 @@ object DownloadDBManager {
       val osClause       = generateOSesClause(osSet)
       val versionsClause = generateVersionsClause(versions)
       parseCount(SQL (
-        """
-          |SELECT %s FROM %s
-          |LEFT JOIN %s ON %s.%s = %s.%s
-          |WHERE %s = {year} AND %s = {month} AND %s = {day}%s%s;
-        """.stripMargin.format(DBConstants.CountKey, TableName,
-                               DFConstants.TableName, TableName, FileIDKey, DFConstants.TableName, DFConstants.IDKey,
-                               YearKey, MonthKey, DayKey, osClause, versionsClause)
+       s"""
+          |SELECT ${DBConstants.CountKey} FROM $TableName
+          |LEFT JOIN ${DFConstants.TableName} ON $TableName.$FileIDKey = ${DFConstants.TableName}.${DFConstants.IDKey}
+          |WHERE $YearKey = {year} AND $MonthKey = {month} AND $DayKey = {day}$osClause$versionsClause;
+        """.stripMargin
       ) on (
         "year"  -> year,
         "month" -> month,
@@ -107,24 +101,24 @@ object DownloadDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val opt = parseDownloadFiles(SQL (
-        """
-          |SELECT * FROM %s
-          |WHERE %s = {id};
-        """.stripMargin.format(TableName, IDKey)
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $IDKey = {id};
+        """.stripMargin
       ) on (
         "id" -> id
       )).headOption
-      opt map (_.successNel[String]) getOrElse ("No download file found with id %s".format(id).failNel)
+      opt map (_.successNel[String]) getOrElse (s"No download file found with id $id".failNel)
   }}
 
   def getAllVersions : Seq[String] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       parseStrings(SQL (
-        """
-          |SELECT DISTINCT %s FROM %s
-          |ORDER BY %s DESC;
-        """.stripMargin.format(VersionKey, TableName, VersionKey)
+       s"""
+          |SELECT DISTINCT $VersionKey FROM $TableName
+          |ORDER BY $VersionKey DESC;
+        """.stripMargin
       ))(VersionKey)
     }
   }
@@ -174,7 +168,7 @@ object DownloadDBManager {
     if (xs.isEmpty)
       ""
     else
-      xs map (x => """%s = "%s"""".format(key, x)) mkString(" AND (", " OR ", ")")
+      xs map (x => s"""$key = "$x"""") mkString(" AND (", " OR ", ")")
 
   def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
   def update[T <% Updatable]  (update: T)                                   { update.update() }
@@ -193,11 +187,11 @@ private object Submittable {
     override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       val sql = SQL (
-        """
-          |INSERT INTO %s
-          |(%s, %s, %s, %s, %s, %s) VALUES
+       s"""
+          |INSERT INTO $TableName
+          |($IPKey, $FileIDKey, $YearKey, $MonthKey, $DayKey, $TimeKey) VALUES
           |({ip}, {file_ID}, {year}, {month}, {day}, {time});
-        """.stripMargin.format(TableName, IPKey, FileIDKey, YearKey, MonthKey, DayKey, TimeKey)
+        """.stripMargin
       ) on (
         "ip"    -> userDownload.ip,
         "file"  -> userDownload.file,
@@ -214,11 +208,11 @@ private object Submittable {
     override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val sql = SQL (
-        """
-          |INSERT INTO %s
-          |(%s, %s, %s, %s) VALUES
+       s"""
+          |INSERT INTO $TableName
+          |($VersionKey, $OSKey, $SizeKey, $PathKey) VALUES
           |({version}, {os}, {size}, {path});
-        """.stripMargin.format(TableName, VersionKey, OSKey, SizeKey, PathKey)
+        """.stripMargin
       ) on (
         "version" -> downloadFile.version,
         "os"      -> downloadFile.os,
@@ -241,11 +235,11 @@ private object Updatable {
     override def update() { DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       val sql = SQL (
-        """
-          |UPDATE %s
-          |SET %s={ip}, %s={file}, %s={year}, %s={month}, %s={day}, %s={time}
-          |WHERE %s={id};
-        """.stripMargin.format(TableName, IPKey, FileIDKey, YearKey, MonthKey, DayKey, TimeKey, IDKey)
+       s"""
+          |UPDATE $TableName
+          |SET $IPKey={ip}, $FileIDKey={file}, $YearKey={year}, $MonthKey={month}, $DayKey={day}, $TimeKey={time}
+          |WHERE $IDKey={id};
+        """.stripMargin
       ) on (
         "id"    -> userDownload.id,
         "ip"    -> userDownload.ip,
@@ -263,11 +257,11 @@ private object Updatable {
     override def update() { DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val sql = SQL (
-        """
-          |UPDATE %s
-          |SET %s={version}, %s={os}, %s={size}, %s={path}
-          |WHERE %s={id};
-        """.stripMargin.format(TableName, VersionKey, OSKey, SizeKey, PathKey, IDKey)
+       s"""
+          |UPDATE $TableName
+          |SET $VersionKey={version}, $OSKey={os}, $SizeKey={size}, $PathKey={path}
+          |WHERE $IDKey={id};
+        """.stripMargin
       ) on (
         "id"      -> downloadFile.id,
         "version" -> downloadFile.version,
@@ -289,7 +283,7 @@ object AnormExtras {
                (implicit connection: java.sql.Connection) : ValidationNEL[String, Long] = {
     try sql.executeInsert() match { case x => f(x) }
     catch {
-      case ex: MySQLIntegrityConstraintViolationException => "SQL constraint violated: %s".format(ex.getMessage).failNel
+      case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel
     }
   }
 }

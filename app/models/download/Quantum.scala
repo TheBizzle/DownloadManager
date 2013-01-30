@@ -25,7 +25,7 @@ case class SimpleDate(day: Int, month: Int, year: Int) extends Quantum[SimpleDat
 
   override protected val Companion = SimpleDate
 
-  override def asDateString = "%d/%d/%d".format(this.month, this.day, this.year)
+  override def asDateString = s"${this.month}/${this.day}/${this.year}"
   override def asJodaDate   = new LocalDate(this.year, this.month, this.day)
   override def <=(that: SimpleDate) : Boolean = {
     (this.year < that.year) || {
@@ -72,7 +72,7 @@ case class SimpleMonth(month: Int, year: Int) extends Quantum[SimpleMonth] {
 
   override protected val Companion = SimpleMonth
 
-  override def asDateString = "%d/%d".format(this.month, this.year)
+  override def asDateString = s"${this.month}/${this.year}"
   override def asJodaDate   = new LocalDate(this.year, this.month, 1)
   override def <=(that: SimpleMonth) : Boolean = {
     (this.year < that.year) || {
@@ -114,7 +114,7 @@ case class SimpleYear(year: Int) extends Quantum[SimpleYear] {
 
   override protected val Companion = SimpleYear
 
-  override def asDateString        = "%d".format(this.year)
+  override def asDateString        = s"${this.year}"
   override def asJodaDate          = new LocalDate(this.year, 1, 1)
   override def <=(that: SimpleYear) = this.year <= that.year
 

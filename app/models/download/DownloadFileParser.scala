@@ -41,7 +41,7 @@ object DownloadFileParser {
 
     osMaybe flatMap {
       os =>
-        val relativePath = "%s%s%s".format(version, File.separator, path)
+        val relativePath = s"$version${File.separator}$path"
         val size = new File(play.Configuration.root.getString("downloads.base_path") + File.separator + relativePath).length
         DownloadFile(None, version, os, size, relativePath).successNel[String]
     }

@@ -25,7 +25,7 @@ object LogParser {
       case FullRegex(ip, date, version, filename, size) =>
         // Meh
       case _ =>
-        println("Unmatchable download entry: " + line)
+        println(s"Unmatchable download entry: $line")
     }
 
   }

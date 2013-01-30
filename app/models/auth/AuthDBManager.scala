@@ -30,15 +30,15 @@ object AuthDBManager {
     DB.withConnection { implicit connection =>
       import DBConstants.Users._
       SQL (
-        """
-          |SELECT %s FROM %s
-          |WHERE %s = {name};
-        """.stripMargin.format(PWKey, TableName, NameKey)
+       s"""
+          |SELECT $PWKey FROM $TableName
+          |WHERE $NameKey = {name};
+        """.stripMargin
       ) on (
         "name" -> username
       ) as {
         str(PWKey).singleOpt
-      } map (_.successNel[String]) getOrElse (("No entry for user with `name` == " + username).failNel)
+      } map (_.successNel[String]) getOrElse (s"No entry for user with `name` == $username".failNel)
     }
   }
 

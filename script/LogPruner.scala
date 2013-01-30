@@ -12,7 +12,7 @@ object LogPruner {
 
   def apply(file: File) {
 
-    val outputFilePath = "%s%spruned-%s".format(file.getParent, File.separator, file.getName)
+    val outputFilePath = s"${file.getParent}${File.separator}pruned-${file.getName}"
 
     val logLines     = io.Source.fromFile(file).getLines()
     val outputWriter = new PrintWriter(outputFilePath)

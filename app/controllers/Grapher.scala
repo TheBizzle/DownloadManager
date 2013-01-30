@@ -22,8 +22,8 @@ object Grapher {
 
   private def obtainChart(urlStr: String) : String = {
     import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
-    val filename = java.util.UUID.randomUUID.toString + ".png"
-    val filepath = "./public/graphs/%s".format(filename)
+    val filename = s"${java.util.UUID.randomUUID.toString}.png"
+    val filepath = s"./public/graphs/$filename"
     IOUtils.copyAndClose(new URL(urlStr).openStream(), new FileOutputStream(filepath))
     filename
   }
