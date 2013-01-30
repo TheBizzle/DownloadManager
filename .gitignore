@@ -20,3 +20,4 @@
 target
 tmp
 /.idea/inspectionProfiles
+/.idea/scala_compiler.xml
