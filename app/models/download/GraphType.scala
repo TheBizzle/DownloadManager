@@ -18,7 +18,7 @@ object GraphType {
     s.toLowerCase match {
       case "discrete"   => Discrete
       case "cumulative" => Cumulative
-      case _            => throw new Exception("Graph Boom!") //@
+      case x            => play.api.Logger.warn(s"Unknown graph type ($x) requested; giving `discrete`"); Discrete
     }
   }
 

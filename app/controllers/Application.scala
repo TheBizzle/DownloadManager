@@ -1,7 +1,7 @@
 package controllers
 
 import
-  play.api.{ data, mvc },
+  play.api.{ data, Logger, mvc },
     data.{ Form, Forms },
       Forms.{ text, tuple },
     mvc.{ Action, Controller }
@@ -85,8 +85,11 @@ object Application extends Controller with Secured {
         { case (s, e, os, versions) => DownloadDBManager.getDownloadStatsBetweenMonths(s.toSimpleMonth, e.toSimpleMonth, os, versions) }
       case "year" =>
         { case (s, e, os, versions) => DownloadDBManager.getDownloadStatsBetweenYears(s.toSimpleMonth.toSimpleYear, e.toSimpleMonth.toSimpleYear, os, versions) }
-      case _ =>
-        throw new Exception("Boom!") //@
+      case x => {
+        case (s, e, os, versions) =>
+          Logger.warn(s"Unknown quantum ($x) requested; giving `month`")
+          DownloadDBManager.getDownloadStatsBetweenMonths(s.toSimpleMonth, e.toSimpleMonth, os, versions)
+      }
     }
   }
 
