@@ -1,5 +1,5 @@
 var onLoad = function() {
-  $('#start-day').val("01/01/2001");
+  $('#start-day').val("01/01/2011");
   $('#end-day').val(getTodaysDateString());
   populateVersionList();
 };
