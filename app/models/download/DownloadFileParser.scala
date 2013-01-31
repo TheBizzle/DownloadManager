@@ -1,11 +1,7 @@
 package models.download
 
 import
-  java.io.File
-
-import
-  scalaz.{ Scalaz, ValidationNEL },
-    Scalaz.ToValidationV
+  play.api.Logger
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,35 +12,72 @@ import
 
 object DownloadFileParser {
 
-  private val RelevancyRegex   = """.*/netlogo/((?:3DPreview|\d+\.)[^/]+)/(.*)""".r
   private val LinuxFileRegex   = """.*\.tar.gz""".r
   private val MacOSFileRegex   = """.*\.dmg""".r
   private val WindowsFileRegex = """.*\.exe""".r
 
-  def fromPath(url: String) : ValidationNEL[String, DownloadFile] =
-    url match {
-      case RelevancyRegex(version, remainder) => parsePath(version, remainder)
-      case _                                  => "Invalid path supplied".failNel
+  def parseLogLine(line: String) {
+
+    val refuseCatcher = """.*""" // Four of the log entries abruptly cut off other entries; this ignores the cut-off junk at the beginning
+    val ipRegex       = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"""
+    val spacerRegex   = """ - (?:-|ccl)""" // Useless spacer thing
+    val dateRegex     = """ \[([^ ]*) -0[56]00\]"""
+    val urlRegex      = """ "\w+ /netlogo"""
+    val versionRegex  = """/+((?:(?:abmplus|internal)/)?[^/]*)"""
+    val filenameRegex = """/([^ ]*?)(?:.backup|\?[^ ]*)?"""
+    val httpRegex     = """ HTTP/1.[01]""""
+    val statusRegex   = """ 200"""
+    val sizeRegex     = """ (\d+)"""
+
+    val regexes = Seq(refuseCatcher, ipRegex, spacerRegex, dateRegex, urlRegex, versionRegex, filenameRegex, httpRegex, statusRegex, sizeRegex)
+
+    val FullRegex = regexes reduceLeft (_ + _) r
+
+    line match {
+
+      case FullRegex(ip, date, version, filename, size) =>
+
+        import org.joda.time.format.DateTimeFormat
+
+        val format             = DateTimeFormat.forPattern("dd/MMM/yyyy:HH:mm:ss")
+        val dateTime           = format.parseDateTime(date)
+        val (year, month, day) = (dateTime.getYear, dateTime.getMonthOfYear, dateTime.getDayOfMonth)
+        val time               = s"${dateTime.getHourOfDay}:${dateTime.getMinuteOfHour}:${dateTime.getSecondOfMinute}"
+
+        import OS._
+
+        val os = filename match {
+          case LinuxFileRegex()   => Linux
+          case MacOSFileRegex()   => Mac
+          case WindowsFileRegex() => Windows
+          case _                  => Logger.warn(s"That's odd....  File '$filename' got operating system `Other`."); Other
+        }
+
+        val downloadFile = DownloadDBManager.getFileByVersionAndOS(version, os) getOrElse generateDownloadFile(version, os, size.toLong, filename)
+        DownloadDBManager.submit(UserDownload(None, ip, downloadFile, year, month, day, time))
+
+      case _ =>
+        println(s"Unmatchable download entry: $line")
+
     }
 
-  private def parsePath(version: String, path: String) : ValidationNEL[String, DownloadFile] = {
+  }
 
-    import OS._
+  private def generateDownloadFile(version: String, os: OS, size: Long, filename: String) : DownloadFile = {
 
-    // Note to self: All non-VM Windows installers match this regex: .*NoVM.*\.exe
-    val osMaybe = path match {
-      case LinuxFileRegex()   => Linux.successNel[String]
-      case MacOSFileRegex()   => Mac.successNel[String]
-      case WindowsFileRegex() => Windows.successNel[String]
-      case _                  => "Non-download file".failNel
-    }
+    val initial = DownloadFile(None, version, os, size, filename)
+    val idMaybe = DownloadDBManager.submit(initial)
 
-    osMaybe flatMap {
-      os =>
-        val relativePath = s"$version${File.separator}$path"
-        val size = new File(play.Configuration.root.getString("downloads.base_path") + File.separator + relativePath).length
-        DownloadFile(None, version, os, size, relativePath).successNel[String]
-    }
+    idMaybe fold ({
+      messages =>
+        Logger.warn("Failed to write download file to DB or get back ID for it")
+        Logger.warn(messages.list.mkString("\n"))
+        Logger.warn("Defaulting to `id` being `None`")
+        initial
+    }, {
+      id =>
+        initial.copy(id = Option(id))
+    })
 
   }
 
