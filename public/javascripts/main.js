@@ -1,5 +1,11 @@
 window.onload = function() {
 
+  $('.collapsible-accordion').accordion({
+    collapsible: true,
+    active: false,
+    heightStyle: "content"
+  });
+
   $('.ui-button').each(function() {
     var elem = $(this);
     elem.button();

@@ -71,7 +71,7 @@ var submitQuery = function(url) {
 
       var s = '';
 
-      $('#check-version > .check-label').each(function() {
+      $('#version-holder > .check-label').each(function() {
         var label  = $(this);
         var button = $("#" + label.attr("for"));
         if (button.is(':checked')) {
@@ -136,18 +136,18 @@ var populateVersionList = function() {
   $.get("/versions", function(x) {
 
     var versionArr = JSON.parse(x);
-    var elem = $("#check-version");
+    var elem = $("#version-holder");
 
     for (var i = 0; i < versionArr.length; i++) {
       elem.append('<input type="checkbox" id="check-' + i + '" name="version" class="check-button version-button dynamic-check-button" /><label for="check-' + i + '" class="unselectable check-label dynamic-check-label">' + versionArr[i] + '</label>');
     }
 
-    $('#check-version > .dynamic-check-button').each(function() {
+    $('#version-holder > .dynamic-check-button').each(function() {
       var elem = $(this);
       elem.button();
     });
 
-    $('#check-version > .dynamic-check-label').each(function() {
+    $('#version-holder > .dynamic-check-label').each(function() {
       var elem = $(this);
       elem.click(function() {
 
@@ -174,7 +174,7 @@ var populateVersionList = function() {
       checkAll.button("refresh");
       checkAll.change();
 
-      $('#check-version > .dynamic-check-button').each(function() {
+      $('#version-holder > .dynamic-check-button').each(function() {
         var otherBtn = $(this);
         otherBtn.attr('checked', false);
         otherBtn.button("refresh");

@@ -24,10 +24,13 @@
             </div>
 
             <div id="check-version" style="width: 100%; text-align: center; margin-top: 40px;">
-              <div style="padding: 6px; display: inline-block; background-color: #288DB1; border-radius: 10px 10px 10px 10px;">
-                <input type="checkbox" id="check-all" name="version" class="version-button" checked="checked" /><label for="check-all" id="check-all-label" class="unselectable" style="border: 3px solid black">All Versions</label>
+              <div style="padding: 6px; background-color: #288DB1; border-radius: 10px 10px 10px 10px;">
+                <input type="checkbox" id="check-all" name="version" class="version-button" checked="checked" /><label for="check-all" id="check-all-label" class="unselectable" style="border: 3px solid black; width: 99%;">All Versions</label>
               </div>
-              <br>
+              <div class="collapsible-accordion" style="margin-top: 5px;">
+                <h3>Specific Versions</h3>
+                <div id="version-holder" style="height: 200px;"></div>
+              </div>
             </div>
 
             <div id="check-os" class="check-set has-headroom">
