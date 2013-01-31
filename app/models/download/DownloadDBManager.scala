@@ -206,11 +206,11 @@ private object Submittable {
        s"""
           |INSERT INTO $TableName
           |($IPKey, $FileIDKey, $YearKey, $MonthKey, $DayKey, $TimeKey) VALUES
-          |({ip}, {file_ID}, {year}, {month}, {day}, {time});
+          |({ip}, {file}, {year}, {month}, {day}, {time});
         """.stripMargin
       ) on (
         "ip"    -> userDownload.ip,
-        "file"  -> userDownload.file,
+        "file"  -> userDownload.file.id.get,
         "year"  -> userDownload.year,
         "month" -> userDownload.month,
         "day"   -> userDownload.day,
@@ -231,7 +231,7 @@ private object Submittable {
         """.stripMargin
       ) on (
         "version" -> downloadFile.version,
-        "os"      -> downloadFile.os,
+        "os"      -> downloadFile.os.toString,
         "size"    -> downloadFile.size,
         "path"    -> downloadFile.path
       )
@@ -257,7 +257,7 @@ private object Updatable {
           |WHERE $IDKey={id};
         """.stripMargin
       ) on (
-        "id"    -> userDownload.id,
+        "id"    -> userDownload.id.get,
         "ip"    -> userDownload.ip,
         "file"  -> userDownload.file,
         "year"  -> userDownload.year,
@@ -279,9 +279,9 @@ private object Updatable {
           |WHERE $IDKey={id};
         """.stripMargin
       ) on (
-        "id"      -> downloadFile.id,
+        "id"      -> downloadFile.id.get,
         "version" -> downloadFile.version,
-        "os"      -> downloadFile.os,
+        "os"      -> downloadFile.os.toString,
         "size"    -> downloadFile.size,
         "path"    -> downloadFile.path
       )
