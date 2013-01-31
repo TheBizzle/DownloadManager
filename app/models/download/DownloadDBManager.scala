@@ -111,6 +111,22 @@ object DownloadDBManager {
       opt map (_.successNel[String]) getOrElse (s"No download file found with id $id".failNel)
   }}
 
+  def getFileByVersionAndOS(version: String, os: OS) : ValidationNEL[String, DownloadFile] = {
+    DB.withConnection { implicit connection =>
+      import DBConstants.DownloadFiles._
+      val opt = parseDownloadFiles(SQL (
+       s"""
+          |SELECT * FROM $TableName
+          |WHERE $VersionKey = {version} AND $OSKey = {os};
+        """.stripMargin
+      ) on (
+        "version" -> version,
+        "os"      -> os.toString
+      )).headOption
+      opt map (_.successNel[String]) getOrElse (s"No download file found with version `$version` and OS `$os`".failNel)
+    }
+  }
+
   def getAllVersions : Seq[String] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
