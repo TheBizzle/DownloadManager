@@ -64,7 +64,7 @@ object Grapher {
           if ((trueEnd - start) <= extrasLimit)
             start to trueEnd
           else
-            (start to trueEnd by (end / extrasLimit) dropRight 1) :+ trueEnd
+            (start to trueEnd by (end / extrasLimit) take extrasLimit) :+ trueEnd
         }
 
         def createXMarkers(xs: Seq[String])(chart: LineChart) : LineChart = {
