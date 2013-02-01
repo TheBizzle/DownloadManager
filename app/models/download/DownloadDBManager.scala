@@ -189,7 +189,7 @@ object DownloadDBManager {
 
   private def generateDateRangeMaybe[T <: Quantum[T]](start: T, end: T) : VNel[Seq[T]] = {
     val range = start to end
-    if (range.size > (365 * 2))
+    if (range.size > (365 * 2 + 1 + 1)) // 2 years + end date + possible leap day
       "Date range too large".failNel
     else
       range.successNel[String]
