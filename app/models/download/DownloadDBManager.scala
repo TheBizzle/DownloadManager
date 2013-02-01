@@ -140,6 +140,27 @@ object DownloadDBManager {
     }
   }
 
+  def existsDownload(download: UserDownload) : Boolean = {
+    DB.withConnection { implicit connection =>
+      import DBConstants.UserDownloads._
+      import download._
+      parseCount(SQL (
+        s"""
+          |SELECT ${DBConstants.CountKey} FROM $TableName
+          |WHERE $YearKey = {year} AND $MonthKey = {month} AND $DayKey = {day}
+          |AND $TimeKey = {time} AND $IPKey = {ip} AND $FileIDKey = {file_id};
+        """.stripMargin
+      ) on (
+        "year"    -> year,
+        "month"   -> month,
+        "day"     -> day,
+        "time"    -> time,
+        "ip"      -> ip,
+        "file_id" -> file.id.get
+      )) > 0
+    }
+  }
+
   private def parseCount(sql: SimpleSql[Row])(implicit connection: Connection) : Long =
     sql as { long(DBConstants.CountKey).single }
 
