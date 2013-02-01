@@ -102,6 +102,8 @@ var submitQuery = function(url) {
     versions:   versionStr
   };
 
+  $("#query-graph").attr('src', '/assets/images/querying.png');
+
   $.ajax({
     type: "POST",
     url:  url,
