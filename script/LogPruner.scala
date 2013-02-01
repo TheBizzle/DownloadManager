@@ -21,6 +21,7 @@ object LogPruner {
       case line if (isRelevant(line)) => outputWriter.println(line)
       case _                          => // Do nothing
     }
+
     outputWriter.close()
 
   }
