@@ -30,15 +30,16 @@ object DownloadDBManager {
 
   import AnormExtras._
 
-  //@ Maybe add some monadic error-handling here at some point (regarding the size of the `start to end` collection)?
-  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Seq[(SimpleDate, Long)] =
-    start to end map { case date @ SimpleDate(day, month, year) => (date, getDLCountByYMD(year, month, day, osSet, versions)) }
+  private type VNel[T] = ValidationNEL[String, T]
 
-  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Seq[(SimpleMonth, Long)] =
-    start to end map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m, osSet, versions)) }
+  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleDate, Long)]] =
+    generateDateRangeMaybe(start, end) map (_ map { case date @ SimpleDate(d, m, y) => (date, getDLCountByYMD(y, m, d, osSet, versions)) })
 
-  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Seq[(SimpleYear, Long)] =
-    start to end map { case year @ SimpleYear(y) => (year, getDLCountByY(y, osSet, versions)) }
+  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleMonth, Long)]] =
+    generateDateRangeMaybe(start, end) map (_ map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m, osSet, versions)) })
+
+  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleYear, Long)]] =
+    generateDateRangeMaybe(start, end) map (_ map { case year @ SimpleYear(y) => (year, getDLCountByY(y, osSet, versions)) })
 
   def getDLCountByY(year: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
     DB.withConnection { implicit connect =>
@@ -185,6 +186,14 @@ object DownloadDBManager {
       ""
     else
       xs map (x => s"""$key = "$x"""") mkString(" AND (", " OR ", ")")
+
+  private def generateDateRangeMaybe[T <: Quantum[T]](start: T, end: T) : VNel[Seq[T]] = {
+    val range = start to end
+    if (range.size > (365 * 2))
+      "Date range too large".failNel
+    else
+      range.successNel[String]
+  }
 
   def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
   def update[T <% Updatable]  (update: T)                                   { update.update() }

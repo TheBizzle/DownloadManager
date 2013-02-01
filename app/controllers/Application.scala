@@ -1,6 +1,9 @@
 package controllers
 
 import
+  scalaz.ValidationNEL
+
+import
   play.api.{ data, Logger, mvc },
     data.{ Form, Forms },
       Forms.{ text, tuple },
@@ -48,17 +51,17 @@ object Application extends Controller with Secured {
         form     => BadRequest("Crap"),
         criteria => Ok {
 
-          val osSet       = OS.parseMany(criteria._1)
-          val startDate   = SimpleDate(criteria._2)
-          val endDate     = SimpleDate(criteria._3)
-          val quantumFunc = determineQuantumFunction(criteria._4)
-          val graphType   = GraphType(criteria._5)
-          val versions    = parseVersions(criteria._6)
+          val osSet            = OS.parseMany(criteria._1)
+          val startDate        = SimpleDate(criteria._2)
+          val endDate          = SimpleDate(criteria._3)
+          val quantumMaybeFunc = determineQuantumFunction(criteria._4)
+          val graphType        = GraphType(criteria._5)
+          val versions         = parseVersions(criteria._6)
 
-          val rawData     = quantumFunc(startDate, endDate, osSet, versions) map { case (q, c) => (q.asDateString, c) }
-          val refinedData = prepareData(rawData, graphType)
+          val rawDataMaybe     = quantumMaybeFunc(startDate, endDate, osSet, versions) map (_ map { case (q, c) => (q.asDateString, c) })
+          val refinedDataMaybe = rawDataMaybe map (prepareData(_, graphType))
 
-          Grapher.fromStrCountPairs(refinedData)
+          Grapher.fromStrCountPairsMaybe(refinedDataMaybe)
 
         }
       )
@@ -77,7 +80,7 @@ object Application extends Controller with Secured {
     }
   }
 
-  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS], Set[String]) => Seq[(Quantum[_], Long)]  = {
+  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS], Set[String]) => ValidationNEL[String, Seq[(Quantum[_], Long)]] = {
     quantumStr.toLowerCase match {
       case "day" =>
         DownloadDBManager.getDownloadStatsBetweenDates _

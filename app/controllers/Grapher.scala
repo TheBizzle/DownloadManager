@@ -1,6 +1,9 @@
 package controllers
 
 import
+  scalaz.ValidationNEL
+
+import
   com.googlecode.charts4j._,
     Color.{ newColor, SKYBLUE, WHITE },
     Shape.DIAMOND
@@ -14,11 +17,8 @@ import
 
 object Grapher {
 
-  def fromStrCountPairs[N : Numeric](pairs: Seq[(String, N)]) : String =
-    if (pairs.size <= (365 * 2 + 1))
-      (generateChartURL[N] _ andThen obtainChart _)(pairs)
-    else
-      "../images/too-many-days.png"
+  def fromStrCountPairsMaybe[N : Numeric](pairsMaybe: ValidationNEL[String, Seq[(String, N)]]) : String =
+    pairsMaybe map (pairs => (generateChartURL[N] _ andThen obtainChart _)(pairs)) getOrElse ("../images/too-many-days.png")
 
   private def obtainChart(urlStr: String) : String = {
     import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
