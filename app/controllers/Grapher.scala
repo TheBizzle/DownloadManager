@@ -50,7 +50,7 @@ object Grapher {
       def initChart(line: Line) : LineChart = {
         val chart = GCharts.newLineChart(line)
         chart.setSize(600, 450) // Limit is 300K pixels; can't go much bigger than this
-        chart.setTitle("NetLogo Downloads|(in thousands of downloads)", WHITE, 16)
+        chart.setTitle("NetLogo Downloads", WHITE, 24)
         chart.setGrid(100d / ExtraXLabelsLimit, 100d / ExtraYLabelsLimit, 3, 2)
         chart
       }
