@@ -18,7 +18,7 @@ object DownloadFileParser {
 
   def parseLogLine(line: String) {
 
-    val refuseCatcher = """.*""" // Four of the log entries abruptly cut off other entries; this ignores the cut-off junk at the beginning
+    val refuseCatcher = """.*?""" // Four of the log entries abruptly cut off other entries; this ignores the cut-off junk at the beginning
     val ipRegex       = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"""
     val spacerRegex   = """ - (?:-|ccl)""" // Useless spacer thing
     val dateRegex     = """ \[([^ ]*) -0[56]00\]"""
