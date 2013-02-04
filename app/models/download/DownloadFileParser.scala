@@ -16,7 +16,7 @@ object DownloadFileParser {
   private val MacOSFileRegex   = """.*\.dmg""".r
   private val WindowsFileRegex = """.*\.exe""".r
 
-  def parseLogLine(line: String) {
+  def parseLogLine(line: String) : Option[UserDownload] = {
 
     val refuseCatcher = """.*?""" // Four of the log entries abruptly cut off other entries; this ignores the cut-off junk at the beginning
     val ipRegex       = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"""
@@ -34,32 +34,49 @@ object DownloadFileParser {
     val FullRegex = regexes reduceLeft (_ + _) r
 
     line match {
-
       case FullRegex(ip, date, version, filename, size) =>
-
-        import org.joda.time.format.DateTimeFormat
-
-        val format             = DateTimeFormat.forPattern("dd/MMM/yyyy:HH:mm:ss")
-        val dateTime           = format.parseDateTime(date)
-        val (year, month, day) = (dateTime.getYear, dateTime.getMonthOfYear, dateTime.getDayOfMonth)
-        val time               = s"${dateTime.getHourOfDay}:${dateTime.getMinuteOfHour}:${dateTime.getSecondOfMinute}"
-
-        import OS._
-
-        val os = filename match {
-          case LinuxFileRegex()   => Linux
-          case MacOSFileRegex()   => Mac
-          case WindowsFileRegex() => Windows
-          case _                  => Logger.warn(s"That's odd....  File '$filename' got operating system `Other`."); Other
-        }
-
-        val downloadFile = DownloadDBManager.getFileByVersionAndOS(version, os) getOrElse generateDownloadFile(version, os, size.toLong, filename)
-        DownloadDBManager.submit(UserDownload(None, ip, downloadFile, year, month, day, time))
-
+        Option(generateUserDownload(ip, date, version, filename, size))
       case _ =>
         println(s"Unmatchable download entry: $line")
-
+        None
     }
+
+  }
+
+  def parseLogLineIfRelevant(line: String) : Option[UserDownload] =
+    if (isRelevant(line))
+      parseLogLine(line)
+    else
+      None
+
+  private def isRelevant(line: String) : Boolean = {
+    (line.contains(".exe") || line.contains(".dmg") || line.contains(".tar.gz")) &&
+      line.contains(" 200 ") &&
+      !line.contains("\"HEAD ") &&
+      line.contains(" /netlogo/")
+  }
+
+  private def generateUserDownload(ip: String, date: String, version: String, filename: String, size: String) : UserDownload = {
+
+    import org.joda.time.format.DateTimeFormat
+
+    val format             = DateTimeFormat.forPattern("dd/MMM/yyyy:HH:mm:ss")
+    val dateTime           = format.parseDateTime(date)
+    val (year, month, day) = (dateTime.getYear, dateTime.getMonthOfYear, dateTime.getDayOfMonth)
+    val time               = s"${dateTime.getHourOfDay}:${dateTime.getMinuteOfHour}:${dateTime.getSecondOfMinute}"
+
+    import OS._
+
+    val os = filename match {
+      case LinuxFileRegex()   => Linux
+      case MacOSFileRegex()   => Mac
+      case WindowsFileRegex() => Windows
+      case _                  => Logger.warn(s"That's odd....  File '$filename' got operating system `Other`."); Other
+    }
+
+    val downloadFile = DownloadDBManager.getFileByVersionAndOS(version, os) getOrElse generateDownloadFile(version, os, size.toLong, filename)
+
+    UserDownload(None, ip, downloadFile, year, month, day, time)
 
   }
 
