@@ -1,16 +1,22 @@
 package controllers
 
 import
-  java.io.{FilenameFilter, File}
+  scala.concurrent.duration._
 
 import
-  play.api.{ Logger, mvc, Play },
-    mvc.{ Action, Controller }
+  java.io.{ File, FilenameFilter }
+
+import
+  play.{ api, libs },
+    api.{ Logger, mvc, Play },
+      mvc.{ Action, Controller },
+    libs.Akka
 
 import
   models.download.{ DownloadDBManager, DownloadFileParser }
 
 import play.api.Play.current
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +26,9 @@ import play.api.Play.current
  */
 
 object Script extends Controller {
+
+  // Check for new downloads every day at midnight
+  Akka.system.scheduler.schedule(timeTillMidnight, 1.days)(submitNewDownloads())
 
   def parseLogs = Action {
 
@@ -40,7 +49,7 @@ object Script extends Controller {
 
   }
 
-  private def submitNewDownloads {
+  private def submitNewDownloads() {
 
     val fileOpt           = getSettingOpt("script.logs.dir") map (new File(_))
     val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
@@ -96,5 +105,19 @@ object Script extends Controller {
   private def getSettingOpt(key: String) = Play.application.configuration.getString(key)
 
   private def getSettingAsBoolean(key: String) = getSettingOpt(key) map (_ == "true") getOrElse false
+
+  private def timeTillMidnight : FiniteDuration = {
+
+    import org.joda.time.{ DateTime, Interval }
+
+    val now      = new DateTime
+    val midnight = now.toLocalDate.plusDays(1).toDateTimeAtStartOfDay(now.getZone)
+
+    val millisToMidnight = new Interval(now, midnight).toDurationMillis
+
+    new FiniteDuration(millisToMidnight, MILLISECONDS)
+
+
+  }
 
 }
