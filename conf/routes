@@ -13,6 +13,9 @@ POST    /login                      controllers.Auth.authenticate
 GET     /logout                     controllers.Auth.logout
 
 GET     /update-db                  controllers.Script.parseLogs
+GET     /update-db-new              controllers.Script.parseNewLogs
+
+GET     /init                       controllers.Script.init
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

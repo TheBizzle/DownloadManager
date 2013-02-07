@@ -30,11 +30,13 @@ object Script extends Controller {
   // Check for new downloads every day at midnight
   Akka.system.scheduler.schedule(timeTillMidnight, 1.days)(submitNewDownloads())
 
+  def init = Action {
+    Ok
+  }
+
   def parseLogs = Action {
 
-    val isActivated = getSettingAsBoolean("script.activated")
-
-    if (isActivated) {
+    if (getSettingAsBoolean("script.activated")) {
       val fileOpt = getSettingOpt("script.logs.dir") map (new File(_))
       fileOpt map {
         _.listFiles().toSeq.par foreach (file => io.Source.fromFile(file).getLines() foreach (DownloadFileParser.parseLogLine(_) foreach (DownloadDBManager.submit(_))))
@@ -44,6 +46,17 @@ object Script extends Controller {
     }
     else
       Logger.warn("Someone's up to no good...")
+
+    Ok
+
+  }
+
+  def parseNewLogs = Action {
+
+    if (getSettingAsBoolean("script.activated"))
+      submitNewDownloads()
+    else
+      Logger.warn("Something fishy's going on...")
 
     Ok
 
