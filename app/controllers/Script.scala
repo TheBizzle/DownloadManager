@@ -28,7 +28,10 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 object Script extends Controller {
 
   // Check for new downloads every day at midnight
-  Akka.system.scheduler.schedule(timeTillMidnight, 1.days)(submitNewDownloads())
+  Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
+    Logger.info(s"Doing my daily chores for ${new org.joda.time.DateTime().toLocalDate.toString}...")
+    submitNewDownloads()
+  }
 
   def init = Action {
     Ok
