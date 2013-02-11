@@ -20,12 +20,9 @@ object ApplicationBuild extends Build {
         "http://ccl.northwestern.edu/devel/charts4j-1.4-SNAPSHOT.jar"
     )
 
-    val moreSettings = Seq[Setting[_]](
-      scalacOptions in ThisBuild += "-feature"
-    )
-
     val main = play.Project(appName, appVersion, appDependencies).settings(
-      resolvers += "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+      resolvers += "Sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
+      scalacOptions += "-language:_"
     )
 
 }
