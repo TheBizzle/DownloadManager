@@ -7,6 +7,9 @@ import
   java.io.{ File, FilenameFilter }
 
 import
+  org.joda.time.{ DateTime, Interval }
+
+import
   play.{ api, libs },
     api.{ Logger, mvc, Play },
       mvc.{ Action, Controller },
@@ -29,8 +32,16 @@ object Script extends Controller {
 
   // Check for new downloads every day at midnight
   Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
-    Logger.info(s"Doing my daily chores for ${new org.joda.time.DateTime().toLocalDate.toString}...")
+
+    val start = new DateTime
+    Logger.info(s"Doing my daily chores for ${start.toLocalDate.toString}...")
+
     submitNewDownloads()
+
+    val end  = new DateTime
+    val time = new Interval(start, end).toDuration.getStandardSeconds
+    Logger.info(s"Chores completed in $time seconds!  (AKA ${time.toDouble / 60} minutes)")
+
   }
 
   def init = Action {
@@ -123,8 +134,6 @@ object Script extends Controller {
   private def getSettingAsBoolean(key: String) = getSettingOpt(key) map (_ == "true") getOrElse false
 
   private def timeTillMidnight : FiniteDuration = {
-
-    import org.joda.time.{ DateTime, Interval }
 
     val now      = new DateTime
     val midnight = now.toLocalDate.plusDays(1).toDateTimeAtStartOfDay(now.getZone)
