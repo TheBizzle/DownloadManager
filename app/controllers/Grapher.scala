@@ -1,6 +1,9 @@
 package controllers
 
 import
+  scala.util.Try
+
+import
   scalaz.ValidationNEL
 
 import
@@ -18,7 +21,9 @@ import
 object Grapher {
 
   def fromStrCountPairsMaybe[N : Numeric](pairsMaybe: ValidationNEL[String, Seq[(String, N)]]) : String =
-    pairsMaybe map (pairs => (generateChartURL[N] _ andThen obtainChart _)(pairs)) getOrElse ("../images/too-many-days.png")
+    pairsMaybe map {
+      pairs => tryGenerateChartURL[N](pairs) map obtainChart getOrElse "../images/unscalable.png"
+    } getOrElse "../images/too-many-days.png"
 
   private def obtainChart(urlStr: String) : String = {
     import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
@@ -28,7 +33,7 @@ object Grapher {
     filename
   }
 
-  private def generateChartURL[N : Numeric](dataPairs: Seq[(String, N)]) : String = {
+  private def tryGenerateChartURL[N : Numeric](dataPairs: Seq[(String, N)]) : Try[String] = {
 
     def generateDownloadsLine(data: Seq[Double]) : Line = {
       val dataArr = if (data.max == 0) Data.newData(data.toArray: _*) else DataUtil.scale(data.toArray: _*)
@@ -119,7 +124,7 @@ object Grapher {
 
     // This has been an interesting experiment --JAB (1/14/13)
     import Numeric.Implicits._
-    (generateDownloadsLine _ andThen generateDownloadsChart(entities, counts.max.toInt) andThen generateURLString _)(counts map (_.toDouble))
+    Try((generateDownloadsLine _ andThen generateDownloadsChart(entities, counts.max.toInt) andThen generateURLString _)(counts map (_.toDouble)))
 
   }
 
