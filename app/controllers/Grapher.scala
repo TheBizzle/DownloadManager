@@ -4,7 +4,7 @@ import
   scala.util.Try
 
 import
-  scalaz.ValidationNEL
+  scalaz.ValidationNel
 
 import
   com.googlecode.charts4j._,
@@ -20,7 +20,7 @@ import
 
 object Grapher {
 
-  def fromStrCountPairsMaybe[N : Numeric](pairsMaybe: ValidationNEL[String, Seq[(String, N)]]) : String =
+  def fromStrCountPairsMaybe[N : Numeric](pairsMaybe: ValidationNel[String, Seq[(String, N)]]) : String =
     pairsMaybe map {
       pairs => tryGenerateChartURL[N](pairs) map obtainChart getOrElse "../images/unscalable.png"
     } getOrElse "../images/too-many-days.png"

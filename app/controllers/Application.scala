@@ -1,7 +1,7 @@
 package controllers
 
 import
-  scalaz.ValidationNEL
+  scalaz.ValidationNel
 
 import
   play.api.{ data, Logger, mvc },
@@ -80,7 +80,7 @@ object Application extends Controller with Secured {
     }
   }
 
-  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS], Set[String]) => ValidationNEL[String, Seq[(Quantum[_], Long)]] = {
+  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS], Set[String]) => ValidationNel[String, Seq[(Quantum[_], Long)]] = {
     quantumStr.toLowerCase match {
       case "day" =>
         DownloadDBManager.getDownloadStatsBetweenDates _

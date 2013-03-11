@@ -9,7 +9,7 @@ import
   org.mindrot.jbcrypt.BCrypt
 
 import
-  scalaz.{ Scalaz, ValidationNEL },
+  scalaz.{ Scalaz, ValidationNel },
     Scalaz.ToValidationV
 
 /**
@@ -26,7 +26,7 @@ object AuthDBManager {
   def validates(username: String, password: String) =
     pwHashForUsername(username) map (hash => BCrypt.checkpw(password, hash)) fold((_ => false), identity)
 
-  private def pwHashForUsername(username: String) : ValidationNEL[String, String] = {
+  private def pwHashForUsername(username: String) : ValidationNel[String, String] = {
     DB.withConnection { implicit connection =>
       import DBConstants.Users._
       SQL (

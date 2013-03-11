@@ -14,7 +14,7 @@ import
   com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
 
 import
-  scalaz.{ Scalaz, ValidationNEL },
+  scalaz.{ Scalaz, ValidationNel },
     Scalaz.ToValidationV
 
 /**
@@ -30,7 +30,7 @@ object DownloadDBManager {
 
   import AnormExtras._
 
-  private type VNel[T] = ValidationNEL[String, T]
+  private type VNel[T] = ValidationNel[String, T]
 
   def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleDate, Long)]] =
     generateDateRangeMaybe(start, end) map (_ map { case date @ SimpleDate(d, m, y) => (date, getDLCountByYMD(y, m, d, osSet, versions)) })
@@ -98,7 +98,7 @@ object DownloadDBManager {
     }
   }
 
-  def getFileByID(id: Long) : ValidationNEL[String, DownloadFile] = {
+  def getFileByID(id: Long) : ValidationNel[String, DownloadFile] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val opt = parseDownloadFiles(SQL (
@@ -112,7 +112,7 @@ object DownloadDBManager {
       opt map (_.successNel[String]) getOrElse (s"No download file found with id $id".failNel)
   }}
 
-  def getFileByVersionAndOS(version: String, os: OS) : ValidationNEL[String, DownloadFile] = {
+  def getFileByVersionAndOS(version: String, os: OS) : ValidationNel[String, DownloadFile] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val opt = parseDownloadFiles(SQL (
@@ -216,13 +216,13 @@ object DownloadDBManager {
       range.successNel[String]
   }
 
-  def submit[T <% Submittable](submission: T) : ValidationNEL[String, Long] = submission.submit
+  def submit[T <% Submittable](submission: T) : ValidationNel[String, Long] = submission.submit
   def update[T <% Updatable]  (update: T)                                   { update.update() }
 
 }
 
 sealed trait Submittable {
-  def submit : ValidationNEL[String, Long]
+  def submit : ValidationNel[String, Long]
 }
 
 private object Submittable {
@@ -230,7 +230,7 @@ private object Submittable {
   import AnormExtras.tryInsert
 
   implicit def userDownload2Submittable(userDownload: UserDownload) = new Submittable {
-    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
+    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       val sql = SQL (
        s"""
@@ -251,7 +251,7 @@ private object Submittable {
   }
 
   implicit def downloadFile2Submittable(downloadFile: DownloadFile) = new Submittable {
-    override def submit : ValidationNEL[String, Long] = DB.withConnection { implicit connection =>
+    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val sql = SQL (
        s"""
@@ -325,8 +325,8 @@ object AnormExtras {
   import java.math.{ BigInteger => JBigInt }
   def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
   def raiseDBAccessException = throw new java.sql.SQLException("Retrieved data from database in unexpected format.")
-  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNEL[String, Long])
-               (implicit connection: java.sql.Connection) : ValidationNEL[String, Long] = {
+  def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])
+               (implicit connection: java.sql.Connection) : ValidationNel[String, Long] = {
     try sql.executeInsert() match { case x => f(x) }
     catch {
       case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel
