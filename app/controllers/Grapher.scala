@@ -26,11 +26,17 @@ object Grapher {
     } getOrElse "../images/too-many-days.png"
 
   private def obtainChart(urlStr: String) : String = {
-    import java.io.FileOutputStream, java.net.URL, org.h2.util.IOUtils
+
+    import java.io.{ File, FileOutputStream }, java.net.URL, org.h2.util.IOUtils
+
     val filename = s"${java.util.UUID.randomUUID.toString}.png"
     val filepath = s"./public/graphs/$filename"
-    IOUtils.copyAndClose(new URL(urlStr).openStream(), new FileOutputStream(filepath))
+    val file     = new File(filepath)
+
+    file.getParentFile.mkdir
+    IOUtils.copyAndClose(new URL(urlStr).openStream(), new FileOutputStream(file))
     filename
+
   }
 
   private def tryGenerateChartURL[N : Numeric](dataPairs: Seq[(String, N)]) : Try[String] = {
