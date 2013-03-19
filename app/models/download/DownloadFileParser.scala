@@ -28,8 +28,8 @@ object DownloadFileParser {
     val httpRegex     = """ HTTP/1.[01]""""
     val statusRegex   = """ 200"""
     val sizeRegex     = """ (\d+)"""
-    val parentRegex   = """(?: "[^"]*")?""" // After CCL server migration, this parent directory URL is now present in the logs
-    val browserRegex  = """(?: "[^"]*")?""" // After CCL server migration, this browser info is now present in the logs
+    val parentRegex   = """(?: "[^"]+")?""" // After CCL server migration, this parent directory URL is now present in the logs
+    val browserRegex  = """(?: "[^"]+")?""" // After CCL server migration, this browser info is now present in the logs
 
     val regexes = Seq(refuseCatcher, ipRegex, spacerRegex, dateRegex, urlRegex, versionRegex, filenameRegex, httpRegex, statusRegex, sizeRegex, parentRegex, browserRegex)
 
@@ -51,11 +51,12 @@ object DownloadFileParser {
     else
       None
 
-  private def isRelevant(line: String) : Boolean = {
-    (line.contains(".exe") || line.contains(".dmg") || line.contains(".tar.gz")) &&
-      line.contains(" 200 ") &&
-      !line.contains("\"HEAD ") &&
-      line.contains(" /netlogo/")
+  def isRelevant(line: String) : Boolean = {
+    val RelevantLogRegex = """.*?(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - (?:-|ccl) \[[^\]]*\] "(\w)+ /netlogo/[^ ]+\.(?:exe|dmg|tar\.gz) HTTP/1\.[01]" 200 \d+ "[^"]+" "[^"]+"""".r
+    line match {
+      case RelevantLogRegex(method) => method != "HEAD"
+      case _                        => false
+    }
   }
 
   private def generateUserDownload(ip: String, date: String, version: String, filename: String, size: String) : UserDownload = {
