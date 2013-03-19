@@ -51,7 +51,7 @@ object DownloadFileParser {
     else
       None
 
-  def isRelevant(line: String) : Boolean = {
+  private def isRelevant(line: String) : Boolean = {
     val RelevantLogRegex = """.*?(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - (?:-|ccl) \[[^\]]*\] "(\w)+ /netlogo/[^ ]+\.(?:exe|dmg|tar\.gz) HTTP/1\.[01]" 200 \d+ "[^"]+" "[^"]+"""".r
     line match {
       case RelevantLogRegex(method) => method != "HEAD"
