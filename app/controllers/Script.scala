@@ -81,7 +81,7 @@ object Script extends Controller {
     val fileOpt           = getSettingOpt("script.logs.dir") map (new File(_))
     val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
 
-    val rawFiles = listFilesEndingWith("access_log", fileOpt)
+    val rawFiles = listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)
     val rawFunc  = (file: File) => io.Source.fromFile(file).getLines()
 
     val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
