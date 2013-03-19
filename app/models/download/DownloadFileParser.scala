@@ -28,8 +28,8 @@ object DownloadFileParser {
     val httpRegex     = """ HTTP/1.[01]""""
     val statusRegex   = """ 200"""
     val sizeRegex     = """ (\d+)"""
-    val parentRegex   = """(?: "[^"]*/netlogo/[^/]*/"|"-")?""" // After CCL server migration, this parent directory URL is now present in the logs
-    val browserRegex  = """(?: "[^"]*")?"""                    // After CCL server migration, this browser info is now present in the logs
+    val parentRegex   = """(?: "[^"]*/netlogo/[^/]*/"| "-")?""" // After CCL server migration, this parent directory URL is now present in the logs
+    val browserRegex  = """(?: "[^"]*")?"""                     // After CCL server migration, this browser info is now present in the logs
 
     val regexes = Seq(refuseCatcher, ipRegex, spacerRegex, dateRegex, urlRegex, versionRegex, filenameRegex, httpRegex, statusRegex, sizeRegex, parentRegex, browserRegex)
 
