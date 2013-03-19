@@ -33,14 +33,12 @@ object Script extends Controller {
   // Check for new downloads every day at midnight
   Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
 
-    val start = new DateTime
-    Logger.info(s"Doing my daily chores for ${start.toLocalDate.toString}...")
+    val startFunc = (start: DateTime)               => s"Doing my daily chores for ${start.toLocalDate.toString}..."
+    val endFunc   = (end: DateTime, time: Interval) => s"Chores completed in $time seconds!  (AKA ${time.toDuration.getStandardSeconds.toDouble / 60} minutes)"
 
-    submitNewDownloads()
-
-    val end  = new DateTime
-    val time = new Interval(start, end).toDuration.getStandardSeconds
-    Logger.info(s"Chores completed in $time seconds!  (AKA ${time.toDouble / 60} minutes)")
+    logAndTimeActivity(startFunc, endFunc) {
+      submitNewDownloads()
+    }
 
   }
 
@@ -78,44 +76,51 @@ object Script extends Controller {
 
   private def submitNewDownloads() {
 
-    val fileOpt           = getSettingOpt("script.logs.dir") map (new File(_))
-    val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
+    val startFunc = (start: DateTime)               => s"Starting new log import (${start.toLocalDate.toString})"
+    val endFunc   = (end: DateTime, time: Interval) => s"Log import complete!  Import took $time seconds!  (AKA ${time.toDuration.getStandardSeconds.toDouble / 60} minutes)"
 
-    val rawFiles = listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)
-    val rawFunc  = (file: File) => io.Source.fromFile(file).getLines()
+    logAndTimeActivity(startFunc, endFunc) {
 
-    val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
-    val zipFunc  = (file: File) => {
+      val fileOpt           = getSettingOpt("script.logs.dir") map (new File(_))
+      val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
 
-      import scala.io.BufferedSource
-      import java.io.FileInputStream
-      import java.util.zip.GZIPInputStream
+      val rawFiles = listFilesEndingWith("access_log", fileOpt)
+      val rawFunc  = (file: File) => io.Source.fromFile(file).getLines()
 
-      val fileStream = new FileInputStream(file)
-      val gzipStream = new GZIPInputStream(fileStream)
-      val source     = new BufferedSource(gzipStream)
+      val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
+      val zipFunc  = (file: File) => {
 
-      source.getLines()
+        import scala.io.BufferedSource
+        import java.io.FileInputStream
+        import java.util.zip.GZIPInputStream
 
-    }
+        val fileStream = new FileInputStream(file)
+        val gzipStream = new GZIPInputStream(fileStream)
+        val source     = new BufferedSource(gzipStream)
 
-    val fileFuncPairs = Seq((rawFiles, rawFunc), (zipFiles, zipFunc))
+        source.getLines()
 
-    fileFuncPairs map {
-      case (files, func) => (if (shouldParallelize) files.par else files, func)
-    } map {
-      case (files, func) => files map func foreach {
-        lines =>
-          lines foreach {
-            line =>
-              DownloadFileParser.parseLogLineIfRelevant(line) foreach {
-                case download if (!DownloadDBManager.existsDownload(download)) =>
-                  DownloadDBManager.submit(download)
-                case _ =>
-                // Do nothing
-              }
-          }
       }
+
+      val fileFuncPairs = Seq((rawFiles, rawFunc), (zipFiles, zipFunc))
+
+      fileFuncPairs map {
+        case (files, func) => (if (shouldParallelize) files.par else files, func)
+      } map {
+        case (files, func) => files map func foreach {
+          lines =>
+            lines foreach {
+              line =>
+                DownloadFileParser.parseLogLineIfRelevant(line) foreach {
+                  case download if (!DownloadDBManager.existsDownload(download)) =>
+                    DownloadDBManager.submit(download)
+                  case _ =>
+                  // Do nothing
+                }
+            }
+        }
+      }
+
     }
 
   }
@@ -142,6 +147,21 @@ object Script extends Controller {
 
     new FiniteDuration(millisToMidnight, MILLISECONDS)
 
+
+  }
+
+  private def logAndTimeActivity[T](startMsgFunc: (DateTime) => String, endMsgFunc: (DateTime, Interval) => String)(activity: => T) : T = {
+
+    val start = new DateTime
+    Logger.info(startMsgFunc(start))
+
+    val ret  = activity
+
+    val end  = new DateTime
+    val time = new Interval(start, end)
+    Logger.info(endMsgFunc(end, time))
+
+    ret
 
   }
 
