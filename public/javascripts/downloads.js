@@ -1,6 +1,6 @@
 var onLoad = function() {
   $('#start-day').val("01/01/2011");
-  $('#end-day').val(getTodaysDateString());
+  $('#end-day').val(getYesterdaysDateString());
   populateVersionList();
 };
 
@@ -116,7 +116,7 @@ var submitQuery = function(url) {
 };
 
 // Heavily based on code from Samuel Meddows (http://stackoverflow.com/a/4929629/1116979)
-var getTodaysDateString = function() {
+var getYesterdaysDateString = function() {
 
   var padDatePortion = function(p) {
     if (p < 10)
@@ -125,10 +125,11 @@ var getTodaysDateString = function() {
       return p;
   };
 
-  var today = new Date();
-  var dd  = padDatePortion(today.getDate());
-  var mm  = padDatePortion(today.getMonth() + 1); //January is 0!
-  var yyyy  = today.getFullYear();
+  var today     = new Date();
+  var yesterday = new Date(today.setDate(today.getDate() - 1));
+  var dd        = padDatePortion(yesterday.getDate());
+  var mm        = padDatePortion(yesterday.getMonth() + 1); //January is 0!
+  var yyyy      = yesterday.getFullYear();
 
   return mm + "/" + dd + "/" + yyyy;
 
