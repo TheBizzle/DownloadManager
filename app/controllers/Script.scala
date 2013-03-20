@@ -33,8 +33,8 @@ object Script extends Controller {
   // Check for new downloads every day at midnight
   Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
 
-    val startFunc = (start: DateTime)               => s"Doing my daily chores for ${start.toLocalDate.toString}..."
-    val endFunc   = (end: DateTime, time: Interval) => s"Chores completed in $time seconds!  (AKA ${time.toDuration.getStandardSeconds.toDouble / 60} minutes)"
+    val startFunc = (start: DateTime)                   => s"Doing my daily chores for ${start.toLocalDate.toString}..."
+    val endFunc   = (end: DateTime, interval: Interval) => s"Chores completed!"
 
     logAndTimeActivity(startFunc, endFunc) {
       submitNewDownloads()
@@ -76,8 +76,11 @@ object Script extends Controller {
 
   private def submitNewDownloads() {
 
-    val startFunc = (start: DateTime)               => s"Starting new log import (${start.toLocalDate.toString})"
-    val endFunc   = (end: DateTime, time: Interval) => s"Log import complete!  Import took $time seconds!  (AKA ${time.toDuration.getStandardSeconds.toDouble / 60} minutes)"
+    val startFunc = (start: DateTime)                   => s"Starting new log import (${start.getHourOfDay}:${start.getMinuteOfHour})"
+    val endFunc   = (end: DateTime, interval: Interval) => {
+      val time = interval.toDuration.getStandardSeconds
+      s"Log import complete!  Import took $time seconds!  (AKA ${time.toDouble / 60} minutes)"
+    }
 
     logAndTimeActivity(startFunc, endFunc) {
 
