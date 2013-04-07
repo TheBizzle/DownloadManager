@@ -73,7 +73,7 @@ object Application extends Controller with Secured {
     else
       s split '|' toSet
 
-  private def prepareData(data: Seq[(String, Long)], gt: GraphType) : (Seq[(String, Long)]) = {
+  private def prepareData(data: Seq[(String, Long)], gt: GraphType) : Seq[(String, Long)] = {
     gt match {
       case Discrete   => data
       case Cumulative => data.scanLeft(("", 0L)){ case ((ac, ax), (bc, bx)) => (bc, (ax + bx)) }.drop(1)
