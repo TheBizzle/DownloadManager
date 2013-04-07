@@ -150,7 +150,6 @@ object Script extends Controller {
 
     new FiniteDuration(millisToMidnight, MILLISECONDS)
 
-
   }
 
   private def logAndTimeActivity[T](startMsgFunc: (DateTime) => String, endMsgFunc: (DateTime, Interval) => String)(activity: => T) : T = {
