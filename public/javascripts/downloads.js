@@ -108,9 +108,7 @@ var submitQuery = function(url) {
     type: "POST",
     url:  url,
     data: data,
-    success: function(result) {
-      $("#query-graph").attr('src', '/assets/graphs/' + result);
-    }
+    success: generateChart
   });
 
 };
@@ -191,3 +189,73 @@ var populateVersionList = function() {
   });
 };
 
+var generateChart = function(data) {
+
+  var DateKeyName  = 'Date';
+  var CountKeyName = 'Downloads';
+
+  var obj = JSON.parse(data);
+  obj[DateKeyName]  = obj['dates'];
+  obj[CountKeyName] = obj['nums'];
+  delete obj['dates'];
+  delete obj['nums'];
+
+  var meta = {
+    type:   "date",
+    format: determineDateFormat(obj[DateKeyName][0])
+  };
+
+  var polyData = polyjs.data(obj, meta);
+  var spec = {
+    title: "Downloads",
+    layers: [
+      {
+        data: polyData,
+        type: 'line',
+        x:    DateKeyName,
+        y:    CountKeyName,
+        size: { 'const': 4 }
+      }, {
+        data: polyData,
+        type: 'point',
+        x:    DateKeyName,
+        y:    CountKeyName,
+        size: { 'const': 6 }
+      }
+    ],
+    guide: {
+      x: {
+        numticks: 10
+      },
+      y: {
+        min: 0
+      }
+    },
+    dom: 'query-graph',
+    width: 500,
+    height: 500
+  };
+
+  polyjs.chart(spec);
+
+};
+
+var determineDateFormat = function(head) {
+
+  var day   = "MM/DD/YYYY";
+  var month = "MM/YYYY";
+  var year  = "YYYY";
+
+  var out     = undefined;
+  var slashes = (head.split("/").length - 1);
+
+  if (slashes === 1)
+    out = month;
+  else if (slashes === 2)
+    out = day;
+  else
+    out = year;
+
+  return out;
+
+};

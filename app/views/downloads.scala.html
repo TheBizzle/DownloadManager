@@ -2,6 +2,7 @@
 
 @main("Downloads") {
   <script src="@routes.Assets.at("javascripts/downloads.js")" type="text/javascript"></script>
+  <script src="@routes.Assets.at("javascripts/polychart2.min.js")" type="text/javascript"></script>
   <div class="ui-widget ui-widget-content ui-corner-all" style="padding: 40px 45px;">
 
       <table>
@@ -49,7 +50,7 @@
           </td>
           <td style="width: 10%;"><div style="height: 550px; width: 50%; border-right: 3px solid #AFAFAF"></div></td>
           <td style="width: 40%;">
-            <img id="query-graph" src='@routes.Assets.at("images/no-graph.png")' class="round-bordered" alt="Graph">
+            <div id="query-graph" class="round-bordered">
           </td>
         </tr>
       </table>

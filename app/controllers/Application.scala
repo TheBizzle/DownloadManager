@@ -61,7 +61,22 @@ object Application extends Controller with Secured {
           val rawDataMaybe     = quantumMaybeFunc(startDate, endDate, osSet, versions) map (_ map { case (q, c) => (q.asDateString, c) })
           val refinedDataMaybe = rawDataMaybe map (prepareData(_, graphType))
 
-          Grapher.fromStrCountPairsMaybe(refinedDataMaybe)
+          refinedDataMaybe map {
+            pairs =>
+
+              implicit class JSONArrayable[T](xs: Seq[T]) {
+                def toJSONArray = xs.mkString("[\"", "\",\"", "\"]")
+              }
+
+              val (dates, nums) = pairs.unzip
+
+              s"""{
+                |  "dates": ${dates.toJSONArray},
+                |  "nums":  ${nums.toJSONArray}
+                |}
+              """.stripMargin.trim
+
+          } getOrElse "{}"
 
         }
       )
