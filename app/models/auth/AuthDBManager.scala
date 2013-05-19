@@ -52,7 +52,7 @@ private object DBConstants {
 
   object Users extends Table {
 
-    override val TableName = "users"
+    override lazy val TableName = "users"
 
     val NameKey = "name"
     val PWKey   = "pw"

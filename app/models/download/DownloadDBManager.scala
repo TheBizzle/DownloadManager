@@ -344,7 +344,7 @@ private object DBConstants {
 
   object UserDownloads extends Table {
 
-    override val TableName = "user_downloads"
+    override lazy val TableName = "user_downloads"
 
     val DayKey    = "day"
     val FileIDKey = "file_id"
@@ -358,7 +358,7 @@ private object DBConstants {
 
   object DownloadFiles extends Table {
 
-    override val TableName = "download_files"
+    override lazy val TableName = "download_files"
 
     val IDKey      = "id"
     val OSKey      = "os"

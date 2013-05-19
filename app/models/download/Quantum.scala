@@ -44,7 +44,7 @@ object SimpleDate extends QuantumCompanion[SimpleDate] {
 
   override def incrementDate(jodaDate: LocalDate) = jodaDate.plusDays(1)
 
-  override val DateRegex = """(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})""".r
+  override lazy val DateRegex = """(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})""".r
 
   private def retrieveDMY(str: String) : (Int, Int, Int) = {
     str match {
@@ -89,7 +89,7 @@ object SimpleMonth extends QuantumCompanion[SimpleMonth] {
 
   override def incrementDate(jodaDate: LocalDate) = jodaDate.plusMonths(1)
 
-  override val DateRegex = """(\d{1,2})[/-](\d{2}|\d{4})""".r
+  override lazy val DateRegex = """(\d{1,2})[/-](\d{2}|\d{4})""".r
 
   private def retrieveMY(str: String) : (Int, Int) = {
     str match {
@@ -127,7 +127,7 @@ object SimpleYear extends QuantumCompanion[SimpleYear] {
 
   override def incrementDate(jodaDate: LocalDate) = jodaDate.plusYears(1)
 
-  override val DateRegex = """(\d{2}|\d{4})""".r
+  override lazy val DateRegex = """(\d{2}|\d{4})""".r
 
   private def retrieveY(str: String) : Int = {
     str match { case DateRegex(y) => parseYearStr(y) }
