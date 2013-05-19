@@ -118,7 +118,7 @@ object Script extends Controller {
                   case download if (!DownloadDBManager.existsDownload(download)) =>
                     DownloadDBManager.submit(download)
                   case _ =>
-                  // Do nothing
+                    // Do nothing
                 }
             }
         }
