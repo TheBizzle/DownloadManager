@@ -46,7 +46,8 @@ object Script extends Controller {
     Ok
   }
 
-  def parseAllLogs = Action {
+  // Assumes that all log lines are relevant and new!
+  def parsePrunedLogs = Action {
 
     if (getSettingAsBoolean("script.activated")) {
       val fileOpt = getSettingOpt("script.logs.dir") map (new File(_))
