@@ -88,7 +88,7 @@ object Script extends Controller {
       val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
 
       val rawFiles = listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)
-      val rawFunc  = (file: File) => io.Source.fromFile(file).getLines()
+      val rawFunc  = (file: File) => using(io.Source.fromFile(file)){ _.getLines() }
 
       val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
       val zipFunc  = (file: File) => {
@@ -101,7 +101,7 @@ object Script extends Controller {
         val gzipStream = new GZIPInputStream(fileStream)
         val source     = new BufferedSource(gzipStream)
 
-        source.getLines()
+        using(source){ _.getLines() }
 
       }
 
@@ -166,5 +166,8 @@ object Script extends Controller {
     ret
 
   }
+
+  private def using[A <: { def close() }, B](stream: A)(f: A => B) : B =
+    try { f(stream) } finally { stream.close() }
 
 }
