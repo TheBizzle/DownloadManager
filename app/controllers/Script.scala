@@ -54,11 +54,13 @@ object Script extends Controller {
       fileOpt map {
         _.listFiles().toSeq.par foreach {
           file =>
-            using(io.Source.fromFile(file)){ _.getLines() } foreach {
-              DownloadFileParser.parseLogLine(_) foreach {
-                DownloadDBManager.submit(_)
+            streaming(io.Source.fromFile(file)){ _.getLines() } {
+              _ foreach {
+                DownloadFileParser.parseLogLine(_) foreach {
+                  DownloadDBManager.submit(_)
+                }
               }
-            }
+          }
         }
       } getOrElse {
         Logger.warn("No `script.logs_dir` given in the application's configuration")
@@ -96,7 +98,7 @@ object Script extends Controller {
       val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
 
       val rawFiles = listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)
-      val rawFunc  = (file: File) => using(io.Source.fromFile(file)){ _.getLines() }
+      val rawFunc  = (file: File) => (f: (TraversableOnce[String]) => Unit) => streaming(io.Source.fromFile(file)) { _.getLines() }
 
       val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
       val zipFunc  = (file: File) => {
@@ -109,7 +111,7 @@ object Script extends Controller {
         val gzipStream = new GZIPInputStream(fileStream)
         val source     = new BufferedSource(gzipStream)
 
-        using(source){ _.getLines() }
+        streaming(source){ _.getLines() }
 
       }
 
@@ -119,16 +121,18 @@ object Script extends Controller {
         case (files, func) => (if (shouldParallelize) files.par else files, func)
       } map {
         case (files, func) => files map func foreach {
-          lines =>
-            lines foreach {
-              line =>
-                DownloadFileParser.parseLogLineIfRelevant(line) foreach {
-                  case download if (!DownloadDBManager.existsDownload(download)) =>
-                    DownloadDBManager.submit(download)
-                  case _ =>
-                    // Do nothing
-                }
-            }
+          _ {
+           lines =>
+             lines foreach {
+               line =>
+                 DownloadFileParser.parseLogLineIfRelevant(line) foreach {
+                   case download if (!DownloadDBManager.existsDownload(download)) =>
+                     DownloadDBManager.submit(download)
+                   case _ =>
+                     // Do nothing
+                 }
+             }
+          }
         }
       }
 
@@ -173,6 +177,12 @@ object Script extends Controller {
 
     ret
 
+  }
+
+  private def streaming[A <: { def close() }](stream: A)(f: (A) => TraversableOnce[String])(g: (TraversableOnce[String]) => Unit) {
+    using(stream) {
+      a => (f andThen g)(a)
+    }
   }
 
   private def using[A <: { def close() }, B](stream: A)(f: A => B) : B =
