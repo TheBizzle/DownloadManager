@@ -37,7 +37,7 @@ object Script extends Controller {
     val endFunc   = (end: DateTime, interval: Interval) => s"Chores completed!"
 
     logAndTimeActivity(startFunc, endFunc) {
-      submitNewDownloads()
+      submitRecentDownloads()
     }
 
   }
@@ -46,7 +46,7 @@ object Script extends Controller {
     Ok
   }
 
-  def parseLogs = Action {
+  def parseAllLogs = Action {
 
     if (getSettingAsBoolean("script.activated")) {
       val fileOpt = getSettingOpt("script.logs.dir") map (new File(_))
@@ -70,10 +70,10 @@ object Script extends Controller {
 
   }
 
-  def parseNewLogs = Action {
+  def parseRecentLogs = Action {
 
     if (getSettingAsBoolean("script.activated"))
-      submitNewDownloads()
+      submitRecentDownloads()
     else
       Logger.warn("Something fishy's going on...")
 
@@ -81,7 +81,7 @@ object Script extends Controller {
 
   }
 
-  private def submitNewDownloads() {
+  private def submitRecentDownloads() {
 
     val startFunc = (start: DateTime)                   => s"Starting new log import (${start.getHourOfDay}:${start.getMinuteOfHour})"
     val endFunc   = (end: DateTime, interval: Interval) => {

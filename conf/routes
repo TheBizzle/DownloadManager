@@ -12,8 +12,8 @@ GET     /login                      controllers.Auth.login
 POST    /login                      controllers.Auth.authenticate
 GET     /logout                     controllers.Auth.logout
 
-GET     /update-db                  controllers.Script.parseLogs
-GET     /update-db-new              controllers.Script.parseNewLogs
+GET     /update-db                  controllers.Script.parseAllLogs
+GET     /update-db-new              controllers.Script.parseRecentLogs
 
 GET     /init                       controllers.Script.init
 
