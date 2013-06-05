@@ -51,7 +51,14 @@ object Script extends Controller {
     if (getSettingAsBoolean("script.activated")) {
       val fileOpt = getSettingOpt("script.logs.dir") map (new File(_))
       fileOpt map {
-        _.listFiles().toSeq.par foreach (file => io.Source.fromFile(file).getLines() foreach (DownloadFileParser.parseLogLine(_) foreach (DownloadDBManager.submit(_))))
+        _.listFiles().toSeq.par foreach {
+          file =>
+            using(io.Source.fromFile(file)){ _.getLines() } foreach {
+              DownloadFileParser.parseLogLine(_) foreach {
+                DownloadDBManager.submit(_)
+              }
+            }
+        }
       } getOrElse {
         Logger.warn("No `script.logs_dir` given in the application's configuration")
       }
