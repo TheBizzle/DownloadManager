@@ -1,28 +1,28 @@
 .login-form {
-  border-radius: 10px;
-  background-color: #2eb24d;
-  padding: 7px;
-  width: 55%;
-  margin-left: auto;
-  margin-right: auto;
+  border-radius:    10px;
+  background-color: #2EB24D;
+  padding:          7px;
+  width:            55%;
+  margin-left:      auto;
+  margin-right:     auto;
 }
 
 .login-form > div > p > input {
   border-radius: 8px;
-  padding: 5px 5px 5px 8px;
-  font-size: 22px;
-  width: 45%;
+  padding:       5px 5px 5px 8px;
+  font-size:     22px;
+  width:         45%;
 }
 
 .login-form > div > p > button {
-  border-radius: 14px;
-  width: 40%;
-  padding-top: 4px;
+  border-radius:  14px;
+  width:          40%;
+  padding-top:    4px;
   padding-bottom: 4px;
 }
 
 .flash {
-  color: #fa8400;
+  color:       #FA8400;
   font-weight: bold;
 }
 
@@ -30,25 +30,21 @@
   height: 16em;
 }
 
-body {
-  background-color: #454545;
-}
-
 .unselectable {
-  -moz-user-select: -moz-none;
-  -khtml-user-select: none;
+  -moz-user-select:    -moz-none;
+  -khtml-user-select:  none;
   -webkit-user-select: none;
-  user-select: none;
+  user-select:         none;
 }
 
 .date-input {
   text-align: center;
-  width: 33%;
+  width:      33%;
 }
 
 .round-bordered {
-  border: 6px solid #AFAFAF;
-  border-radius: 10px 10px 10px 10px;
+  border:        6px solid #AFAFAF;
+  border-radius: 10px;
 }
 
 .has-headroom {
@@ -57,5 +53,11 @@ body {
 
 .dynamic-check-label {
   margin: 5px;
+}
+
+/* Element Type Rules */
+
+body {
+  background-color: #454545;
 }
 
