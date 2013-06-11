@@ -113,11 +113,13 @@ populateVersionList = ->
     for i in [0...versionArr.length]
       e.append("<input type='checkbox' id='check-#{i}' name='version' class='check-button version-button dynamic-check-button' /><label for='check-#{i}' class='unselectable check-label dynamic-check-label'>#{versionArr[i]}</label>")
 
+    # Generate a proper button for each version
     $('#version-holder > .dynamic-check-button').each(->
       elem = $(this)
       elem.button()
     )
 
+    # Generate a proper label for each version by making it nicely clickable
     $('#version-holder > .dynamic-check-label').each(->
 
       elem = $(this)
@@ -139,9 +141,11 @@ populateVersionList = ->
 
     )
 
+    # Generate a proper "check all" button
     checkAll = $("#check-all")
     checkAll.button()
 
+    # Check the "check all" button, and make it nicely clickable
     $("#check-all-label").click(->
 
       checkAll.attr('checked', !checkAll.is(":checked"))
