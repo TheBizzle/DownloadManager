@@ -21,6 +21,10 @@ object Application extends Controller with Secured {
     Ok(views.html.index("Your new application is ready."))
   }
 
+  def redirect(path: String) = Action {
+    MovedPermanently(s"/$path")
+  }
+
   def downloads = withAuth {
     username => implicit request =>
       Ok(views.html.downloads(username))
