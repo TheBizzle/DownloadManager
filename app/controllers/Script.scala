@@ -31,19 +31,17 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 object Script extends Controller {
 
   // Check for new downloads every day at midnight
-  Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
+  def init() {
+    Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
 
-    val startFunc = (start: DateTime)                   => s"Doing my daily chores for ${start.toLocalDate.toString}..."
-    val endFunc   = (end: DateTime, interval: Interval) => s"Chores completed!"
+      val startFunc = (start: DateTime)                   => s"Doing my daily chores for ${start.toLocalDate.toString}..."
+      val endFunc   = (end: DateTime, interval: Interval) => s"Chores completed!"
 
-    logAndTimeActivity(startFunc, endFunc) {
-      submitRecentDownloads()
+      logAndTimeActivity(startFunc, endFunc) {
+        submitRecentDownloads()
+      }
+
     }
-
-  }
-
-  def init = Action {
-    Ok
   }
 
   // Assumes that all log lines are relevant and new!

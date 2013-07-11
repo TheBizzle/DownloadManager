@@ -15,7 +15,6 @@ GET     /logout                     controllers.Auth.logout
 GET     /update-db                  controllers.Script.parsePrunedLogs
 GET     /update-db-new              controllers.Script.parseRecentLogs
 
-GET     /init                       controllers.Script.init
 # Redirect trailing slashes
 GET     /*path/                     controllers.Application.redirect(path)
 
