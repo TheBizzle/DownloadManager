@@ -84,8 +84,14 @@ object Script extends Controller {
 
   private def submitRecentDownloads() {
 
-    val startFunc = (start: DateTime)                   => s"Starting new log import (${start.getHourOfDay}:%02d)".format(start.getMinuteOfHour)
-    val endFunc   = (end: DateTime, interval: Interval) => {
+    val startFunc = (start: DateTime) => {
+      val h      = start.getHourOfDay
+      val hour   = if (h == 0) 12 else h
+      val minute = "%02d".format(start.getMinuteOfHour)
+      s"Starting new log import ($hour:$minute)"
+    }
+
+    val endFunc = (end: DateTime, interval: Interval) => {
       val time = interval.toDuration.getStandardSeconds
       s"Log import complete!  Import took $time seconds!  (AKA ${time.toDouble / 60} minutes)"
     }
