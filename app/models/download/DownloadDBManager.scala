@@ -278,7 +278,7 @@ sealed trait Updatable {
 private object Updatable {
 
   implicit def userDownload2Updatable(userDownload: UserDownload) = new Updatable {
-    override def update() { DB.withConnection { implicit connection =>
+    override def update() : Unit = { DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       val sql = SQL (
        s"""
@@ -300,7 +300,7 @@ private object Updatable {
   }
 
   implicit def downloadFile2Updatable(downloadFile: DownloadFile) = new Updatable {
-    override def update() { DB.withConnection { implicit connection =>
+    override def update() : Unit = { DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val sql = SQL (
        s"""

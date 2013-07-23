@@ -31,7 +31,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 object Script extends Controller {
 
   // Check for new downloads every day at midnight
-  def init() {
+  def init() : Unit = {
     Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
 
       val startFunc = (start: DateTime)                   => s"Doing my daily chores for ${start.toLocalDate.toString}..."
@@ -82,7 +82,7 @@ object Script extends Controller {
 
   }
 
-  private def submitRecentDownloads() {
+  private def submitRecentDownloads() : Unit = {
 
     val startFunc = (start: DateTime) => {
       val h      = start.getHourOfDay
@@ -183,7 +183,7 @@ object Script extends Controller {
 
   }
 
-  private def streaming[A <: { def close() }](stream: A)(f: (A) => TraversableOnce[String])(g: (TraversableOnce[String]) => Unit) {
+  private def streaming[A <: { def close() }](stream: A)(f: (A) => TraversableOnce[String])(g: (TraversableOnce[String]) => Unit) : Unit = {
     using(stream) {
       a => (f andThen g)(a)
     }
