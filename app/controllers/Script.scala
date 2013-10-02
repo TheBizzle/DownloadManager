@@ -147,13 +147,13 @@ object Script extends Controller {
   }
 
   private def listFilesEndingWith(endsWithStr: String, fileOpt: Option[File]) : Seq[File] =
-    fileOpt map {
+    fileOpt flatMap {
       file =>
         val filter = new FilenameFilter {
           override def accept(parent: File, filename: String) = filename.endsWith(endsWithStr)
         }
-        file.listFiles(filter).toSeq
-    } getOrElse (Seq())
+        Option(file.listFiles(filter).toSeq)
+    } getOrElse Seq()
 
   private def getSettingOpt(key: String) = Play.application.configuration.getString(key)
 
