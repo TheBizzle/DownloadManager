@@ -152,7 +152,7 @@ object Script extends Controller {
         val filter = new FilenameFilter {
           override def accept(parent: File, filename: String) = filename.endsWith(endsWithStr)
         }
-        Option(file.listFiles(filter).toSeq)
+        Option(file.listFiles(filter)) map (_.toSeq)
     } getOrElse Seq()
 
   private def getSettingOpt(key: String) = Play.application.configuration.getString(key)
