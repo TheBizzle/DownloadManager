@@ -1,7 +1,9 @@
 package controllers
 
 import
-  scala.concurrent.duration._
+  scala.{ concurrent, util },
+    concurrent.duration._,
+    util.Try
 
 import
   java.io.{ File, FilenameFilter }
@@ -101,7 +103,7 @@ object Script extends Controller {
       val fileOpt           = getSettingOpt("script.logs.dir") map (new File(_))
       val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
 
-      val rawFiles = listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)
+      val rawFiles = Try(listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)) getOrElse Seq()
       val rawFunc  = (file: File) => streaming(io.Source.fromFile(file)) { _.getLines() } _
 
       val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
