@@ -1,8 +1,9 @@
 package controllers
 
 import
-  scala.{ concurrent, util },
+  scala.{ concurrent, io, util },
     concurrent.duration._,
+    io.Source,
     util.Try
 
 import
@@ -33,16 +34,13 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 object Script extends Controller {
 
   // Check for new downloads every day at midnight
-  def init() : Unit = {
+  def init(): Unit = {
     Akka.system.scheduler.schedule(timeTillMidnight, 1.days) {
-
       val startFunc = (start: DateTime)                   => s"Doing my daily chores for ${start.toLocalDate.toString}..."
       val endFunc   = (end: DateTime, interval: Interval) => s"Chores completed!"
-
       logAndTimeActivity(startFunc, endFunc) {
         submitRecentDownloads()
       }
-
     }
   }
 
@@ -54,7 +52,7 @@ object Script extends Controller {
       fileOpt map {
         _.listFiles().toSeq.par foreach {
           file =>
-            streaming(io.Source.fromFile(file)){ _.getLines() } {
+            streaming(Source.fromFile(file))(_.getLines()) {
               _ foreach {
                 DownloadFileParser.parseLogLine(_) foreach {
                   DownloadDBManager.submit(_)
@@ -84,7 +82,7 @@ object Script extends Controller {
 
   }
 
-  private def submitRecentDownloads() : Unit = {
+  private def submitRecentDownloads(): Unit = {
 
     val startFunc = (start: DateTime) => {
       val h      = start.getHourOfDay
@@ -104,7 +102,7 @@ object Script extends Controller {
       val shouldParallelize = getSettingAsBoolean("script.logs.read.parallel")
 
       val rawFiles = Try(listFilesEndingWith("access_log", fileOpt) ++ listFilesEndingWith("access_log.1", fileOpt)) getOrElse Seq()
-      val rawFunc  = (file: File) => streaming(io.Source.fromFile(file)) { _.getLines() } _
+      val rawFunc  = (file: File) => streaming(Source.fromFile(file)) { _.getLines() } _
 
       val zipFiles = listFilesEndingWith("access_log.1.gz", fileOpt)
       val zipFunc  = (file: File) => {
@@ -132,7 +130,7 @@ object Script extends Controller {
              lines foreach {
                line =>
                  DownloadFileParser.parseLogLineIfRelevant(line) foreach {
-                   case download if (!DownloadDBManager.existsDownload(download)) =>
+                   case download if !DownloadDBManager.existsDownload(download) =>
                      DownloadDBManager.submit(download)
                    case _ =>
                      // Do nothing
@@ -146,7 +144,7 @@ object Script extends Controller {
 
   }
 
-  private def listFilesEndingWith(endsWithStr: String, fileOpt: Option[File]) : Seq[File] =
+  private def listFilesEndingWith(endsWithStr: String, fileOpt: Option[File]): Seq[File] =
     fileOpt flatMap {
       file =>
         val filter = new FilenameFilter {
@@ -155,22 +153,20 @@ object Script extends Controller {
         Option(file.listFiles(filter)) map (_.toSeq)
     } getOrElse Seq()
 
-  private def getSettingOpt(key: String) = Play.application.configuration.getString(key)
+  private def getSettingOpt(key: String): Option[String] =
+    Play.application.configuration.getString(key)
 
-  private def getSettingAsBoolean(key: String) = getSettingOpt(key) map (_ == "true") getOrElse false
+  private def getSettingAsBoolean(key: String): Boolean =
+    getSettingOpt(key).contains("true")
 
-  private def timeTillMidnight : FiniteDuration = {
-
-    val now      = new DateTime
-    val midnight = now.toLocalDate.plusDays(1).toDateTimeAtStartOfDay(now.getZone)
-
+  private def timeTillMidnight: FiniteDuration = {
+    val now              = new DateTime
+    val midnight         = now.toLocalDate.plusDays(1).toDateTimeAtStartOfDay(now.getZone)
     val millisToMidnight = new Interval(now, midnight).toDurationMillis
-
     new FiniteDuration(millisToMidnight, MILLISECONDS)
-
   }
 
-  private def logAndTimeActivity[T](startMsgFunc: (DateTime) => String, endMsgFunc: (DateTime, Interval) => String)(activity: => T) : T = {
+  private def logAndTimeActivity[T](startMsgFunc: (DateTime) => String, endMsgFunc: (DateTime, Interval) => String)(activity: => T): T = {
 
     val start = new DateTime
     Logger.info(startMsgFunc(start))
@@ -185,13 +181,13 @@ object Script extends Controller {
 
   }
 
-  private def streaming[A <: { def close() }](stream: A)(f: (A) => TraversableOnce[String])(g: (TraversableOnce[String]) => Unit) : Unit = {
+  private def streaming[A <: { def close() }](stream: A)(f: (A) => TraversableOnce[String])(g: (TraversableOnce[String]) => Unit): Unit = {
     using(stream) {
       a => (f andThen g)(a)
     }
   }
 
-  private def using[A <: { def close() }, B](stream: A)(f: A => B) : B =
-    try { f(stream) } finally { stream.close() }
+  private def using[A <: { def close() }, B](stream: A)(f: A => B): B =
+    try f(stream) finally stream.close()
 
 }

@@ -10,7 +10,7 @@ import
 
 import
   scalaz.{ Scalaz, ValidationNel },
-    Scalaz.ToValidationV
+    Scalaz.ToValidationOps
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,24 +23,20 @@ import play.api.Play.current
 
 object AuthDBManager {
 
-  def validates(username: String, password: String) =
-    pwHashForUsername(username) map (hash => BCrypt.checkpw(password, hash)) fold((_ => false), identity)
+  def validates(username: String, password: String): Boolean =
+    pwHashForUsername(username).map(hash => BCrypt.checkpw(password, hash)).fold(_ => false, identity)
 
-  private def pwHashForUsername(username: String) : ValidationNel[String, String] = {
+  private def pwHashForUsername(username: String): ValidationNel[String, String] =
     DB.withConnection { implicit connection =>
       import DBConstants.Users._
-      SQL (
-       s"""
-          |SELECT $PWKey FROM $TableName
-          |WHERE $NameKey = {name};
+      val query =
+        s"""
+           |SELECT $PWKey FROM $TableName
+            |WHERE $NameKey = {name};
         """.stripMargin
-      ) on (
-        "name" -> username
-      ) as {
-        str(PWKey).singleOpt
-      } map (_.successNel[String]) getOrElse (s"No entry for user with `name` == $username".failNel)
+      val result = SQL(query) on ("name" -> username) as str(PWKey).singleOpt
+      result.fold(s"No entry for user with `name` == $username".failureNel[String])(_.successNel[String])
     }
-  }
 
 }
 

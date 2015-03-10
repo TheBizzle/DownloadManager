@@ -45,7 +45,7 @@ object Application extends Controller with Secured {
       "versions"   -> text
     ) verifying (
       "Invalid query data",
-      (_ match { case (os, start, end, quantum, graphType, versions) => validateData(os, start, end, quantum, graphType, versions) })
+      (validateData _).tupled
     )
   )
 
@@ -71,23 +71,23 @@ object Application extends Controller with Secured {
       )
   }
 
-  private def parseVersions(s: String) : Set[String] =
+  private def parseVersions(s: String): Set[String] =
     if (s.toLowerCase == "all")
       Set()
     else
-      s split '|' toSet
+      s.split('|').toSet
 
-  private def prepareData(data: Seq[(String, Long)], gt: GraphType) : Seq[(String, Long)] = {
+  private def prepareData(data: Seq[(String, Long)], gt: GraphType): Seq[(String, Long)] = {
     gt match {
       case Discrete   => data
-      case Cumulative => data.scanLeft(("", 0L)){ case ((ac, ax), (bc, bx)) => (bc, (ax + bx)) }.drop(1)
+      case Cumulative => data.scanLeft(("", 0L)){ case ((ac, ax), (bc, bx)) => (bc, ax + bx) }.drop(1)
     }
   }
 
-  private def determineQuantumFunction(quantumStr: String) : (SimpleDate, SimpleDate, Set[OS], Set[String]) => ValidationNel[String, Seq[(Quantum[_], Long)]] = {
+  private def determineQuantumFunction(quantumStr: String): (SimpleDate, SimpleDate, Set[OS], Set[String]) => ValidationNel[String, Seq[(Quantum[_], Long)]] = {
     quantumStr.toLowerCase match {
       case "day" =>
-        DownloadDBManager.getDownloadStatsBetweenDates _
+        DownloadDBManager.getDownloadStatsBetweenDates
       case "month" =>
         { case (s, e, os, versions) => DownloadDBManager.getDownloadStatsBetweenMonths(s.toSimpleMonth, e.toSimpleMonth, os, versions) }
       case "year" =>
@@ -100,6 +100,6 @@ object Application extends Controller with Secured {
     }
   }
 
-  private def validateData(os: String, start: String, end: String, quantum: String, graphType: String, versions: String) = true //@
+  private def validateData(os: String, start: String, end: String, quantum: String, graphType: String, versions: String) = true
 
 }

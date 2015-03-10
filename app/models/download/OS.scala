@@ -16,7 +16,7 @@ object OS {
   case object Linux   extends OS
   case object Other   extends OS
 
-  def parseOne(str: String) : OS = {
+  def parseOne(str: String): OS = {
     if (str contains "Windows")
       Windows
     else if (str contains "Mac")
@@ -27,6 +27,6 @@ object OS {
       Other
   }
 
-  def parseMany(s: String) : Set[OS] = s split '|' map (parseOne(_)) toSet
+  def parseMany(s: String): Set[OS] = s.split('|').map(parseOne).toSet
 
 }

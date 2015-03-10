@@ -24,7 +24,7 @@ object Auth extends Controller {
       "password" -> text
     ) verifying (
       "Invalid username or password",
-      (_ match { case (username, pw) => AuthDBManager.validates(username, pw) })
+      (AuthDBManager.validates _).tupled
     )
   )
 

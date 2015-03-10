@@ -4,18 +4,23 @@ window.addEventListener('load', ->
   populateVersionList()
 )
 
+# (URL) => Unit
 submitQuery = (url) ->
 
+  # (String) => String
   maybeWithSep = (str) ->
     if str?
       "#{str}|"
     else
       ""
 
+  # (String, String) => String
   append = (toBeAdded, was) -> maybeWithSep(was) + toBeAdded
 
+  # () => String
   generateOSStr = ->
 
+    # (String, String, String) => String
     maybeAppendStr = (elemID, osName, str) ->
       if($("#" + elemID).is(':checked'))
         append(osName, str)
@@ -28,6 +33,7 @@ submitQuery = (url) ->
 
     maybeWithLinuxStr
 
+  # () => String
   determineQuantum = ->
     if ($("#radio-days").is(':checked'))
       "Day"
@@ -38,6 +44,7 @@ submitQuery = (url) ->
     else
       "Error"
 
+  # () => String
   determineGraphType = ->
     if ($("#radio-discrete").is(':checked'))
       "Discrete"
@@ -46,6 +53,7 @@ submitQuery = (url) ->
     else
       "Error"
 
+  # () => String
   generateVersionStr = ->
 
     if ($('#check-all').is(':checked'))
@@ -86,7 +94,10 @@ submitQuery = (url) ->
     success: (result) -> $("#query-graph").attr('src', "/assets/graphs/#{result}")
   })
 
+  return
+
 # Heavily based on code from Samuel Meddows (http://stackoverflow.com/a/4929629/1116979)
+# () => String
 getYesterdaysDateString = ->
 
   padDatePortion = (p) ->
@@ -103,6 +114,7 @@ getYesterdaysDateString = ->
 
   "#{mm}/#{dd}/#{yyyy}"
 
+# () => Unit
 populateVersionList = ->
 
   $.get("/versions", (x) ->
@@ -162,6 +174,8 @@ populateVersionList = ->
       false
 
     )
+
+    return
 
   )
 

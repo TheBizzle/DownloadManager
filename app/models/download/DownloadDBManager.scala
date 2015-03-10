@@ -8,14 +8,14 @@ import
   play.api.db.DB
 
 import
-  java.sql.Connection
+  java.sql.{ Connection, SQLException }
 
 import
   com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException
 
 import
   scalaz.{ Scalaz, ValidationNel },
-    Scalaz.ToValidationV
+    Scalaz.ToValidationOps
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,16 +32,16 @@ object DownloadDBManager {
 
   private type VNel[T] = ValidationNel[String, T]
 
-  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleDate, Long)]] =
+  def getDownloadStatsBetweenDates(start: SimpleDate, end: SimpleDate, osSet: Set[OS] = Set(), versions: Set[String] = Set()): VNel[Seq[(SimpleDate, Long)]] =
     generateDateRangeMaybe(start, end) map (_ map { case date @ SimpleDate(d, m, y) => (date, getDLCountByYMD(y, m, d, osSet, versions)) })
 
-  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleMonth, Long)]] =
+  def getDownloadStatsBetweenMonths(start: SimpleMonth, end: SimpleMonth, osSet: Set[OS] = Set(), versions: Set[String] = Set()): VNel[Seq[(SimpleMonth, Long)]] =
     generateDateRangeMaybe(start, end) map (_ map { case month @ SimpleMonth(m, y) => (month, getDLCountByYM(y, m, osSet, versions)) })
 
-  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : VNel[Seq[(SimpleYear, Long)]] =
+  def getDownloadStatsBetweenYears(start: SimpleYear, end: SimpleYear, osSet: Set[OS] = Set(), versions: Set[String] = Set()): VNel[Seq[(SimpleYear, Long)]] =
     generateDateRangeMaybe(start, end) map (_ map { case year @ SimpleYear(y) => (year, getDLCountByY(y, osSet, versions)) })
 
-  def getDLCountByY(year: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
+  def getDLCountByY(year: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()): Long = {
     DB.withConnection { implicit connect =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
@@ -59,7 +59,7 @@ object DownloadDBManager {
     }
   }
 
-  def getDLCountByYM(year: Int, month: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
+  def getDLCountByYM(year: Int, month: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()): Long = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
@@ -78,7 +78,7 @@ object DownloadDBManager {
     }
   }
 
-  def getDLCountByYMD(year: Int, month: Int, day: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()) : Long = {
+  def getDLCountByYMD(year: Int, month: Int, day: Int, osSet: Set[OS] = Set(), versions: Set[String] = Set()): Long = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import DBConstants.{ DownloadFiles => DFConstants }
@@ -98,7 +98,7 @@ object DownloadDBManager {
     }
   }
 
-  def getFileByID(id: Long) : ValidationNel[String, DownloadFile] = {
+  def getFileByID(id: Long): ValidationNel[String, DownloadFile] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val opt = parseDownloadFiles(SQL (
@@ -109,10 +109,10 @@ object DownloadDBManager {
       ) on (
         "id" -> id
       )).headOption
-      opt map (_.successNel[String]) getOrElse (s"No download file found with id $id".failNel)
+      opt.fold(s"No download file found with id $id".failureNel[DownloadFile])(_.successNel[String])
   }}
 
-  def getFileByVersionAndOS(version: String, os: OS) : ValidationNel[String, DownloadFile] = {
+  def getFileByVersionAndOS(version: String, os: OS): ValidationNel[String, DownloadFile] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val opt = parseDownloadFiles(SQL (
@@ -124,11 +124,11 @@ object DownloadDBManager {
         "version" -> version,
         "os"      -> os.toString
       )).headOption
-      opt map (_.successNel[String]) getOrElse (s"No download file found with version `$version` and OS `$os`".failNel)
+      opt.fold(s"No download file found with version `$version` and OS `$os`".failureNel[DownloadFile])(_.successNel[String])
     }
   }
 
-  def getAllVersions : Seq[String] = {
+  def getAllVersions: Seq[String] = {
     DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       parseStrings(SQL (
@@ -140,7 +140,7 @@ object DownloadDBManager {
     }
   }
 
-  def existsDownload(download: UserDownload) : Boolean = {
+  def existsDownload(download: UserDownload): Boolean = {
     DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       import download._
@@ -161,10 +161,10 @@ object DownloadDBManager {
     }
   }
 
-  private def parseCount(sql: SimpleSql[Row])(implicit connection: Connection) : Long =
+  private def parseCount(sql: SimpleSql[Row])(implicit connection: Connection): Long =
     sql as { long(DBConstants.CountKey).single }
 
-  private def parseUserDownloads(sql: SimpleSql[Row])(implicit connection: Connection) : Seq[UserDownload] = {
+  private def parseUserDownloads(sql: SimpleSql[Row])(implicit connection: Connection): Seq[UserDownload] = {
     import DBConstants.UserDownloads._
     sql as {
       long(IDKey) ~ str(IPKey) ~ long(FileIDKey) ~ int(YearKey) ~ int(MonthKey) ~ int(DayKey) ~ str(TimeKey) map {
@@ -178,7 +178,7 @@ object DownloadDBManager {
     }
   }
 
-  private def parseDownloadFiles(sql: SimpleSql[Row])(implicit connection: Connection) : Seq[DownloadFile] = {
+  private def parseDownloadFiles(sql: SimpleSql[Row])(implicit connection: Connection): Seq[DownloadFile] = {
     import DBConstants.DownloadFiles._
     sql as {
       long(IDKey) ~ str(VersionKey) ~ str(OSKey) ~ long(SizeKey) ~ str(PathKey) map {
@@ -189,48 +189,48 @@ object DownloadDBManager {
     }
   }
 
-  private def parseStrings(sql: SimpleSql[Row])(key: String)(implicit connection: Connection) : Seq[String] = {
+  private def parseStrings(sql: SimpleSql[Row])(key: String)(implicit connection: Connection): Seq[String] = {
     val Key = key
     sql as { str(Key) * }
   }
 
-  private def generateOSesClause(osSet: Set[OS]) : String = {
+  private def generateOSesClause(osSet: Set[OS]): String = {
     implicit val f = (os: OS) => os.toString
     generateQueryConstraintClause(osSet, DBConstants.DownloadFiles.OSKey)
   }
 
-  private def generateVersionsClause(versions: Set[String]) : String =
+  private def generateVersionsClause(versions: Set[String]): String =
     generateQueryConstraintClause(versions, DBConstants.DownloadFiles.VersionKey)
 
-  private def generateQueryConstraintClause[T <% String](xs: Iterable[T], key: String) : String =
+  private def generateQueryConstraintClause[T](xs: Iterable[T], key: String)(implicit f: (T) => String): String =
     if (xs.isEmpty)
       ""
     else
-      xs map (x => s"""$key = "$x"""") mkString(" AND (", " OR ", ")")
+      xs.map(x => s"""$key = "${f(x)}"""").mkString(" AND (", " OR ", ")")
 
-  private def generateDateRangeMaybe[T <: Quantum[T]](start: T, end: T) : VNel[Seq[T]] = {
+  private def generateDateRangeMaybe[T <: Quantum[T]](start: T, end: T): VNel[Seq[T]] = {
     val range = start to end
     if (range.size > (365 * 2 + 1 + 1)) // 2 years + end date + possible leap day
-      "Date range too large".failNel
+      "Date range too large".failureNel[Seq[T]]
     else
       range.successNel[String]
   }
 
-  def submit[T <% Submittable](submission: T) : ValidationNel[String, Long] = submission.submit
-  def update[T <% Updatable]  (update: T)                                   { update.update() }
+  def submit[T](submission: T)(implicit f: (T) => Submittable): ValidationNel[String, Long] = f(submission).submit
+  def update[T](update: T)    (implicit f: (T) => Updatable):   Unit                        = f(update).update()
 
 }
 
 sealed trait Submittable {
-  def submit : ValidationNel[String, Long]
+  def submit: ValidationNel[String, Long]
 }
 
 private object Submittable {
 
   import AnormExtras.tryInsert
 
-  implicit def userDownload2Submittable(userDownload: UserDownload) = new Submittable {
-    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
+  implicit class UserDownloadSubmittable(userDownload: UserDownload) extends Submittable {
+    override def submit: ValidationNel[String, Long] = DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       val sql = SQL (
        s"""
@@ -250,8 +250,8 @@ private object Submittable {
     }
   }
 
-  implicit def downloadFile2Submittable(downloadFile: DownloadFile) = new Submittable {
-    override def submit : ValidationNel[String, Long] = DB.withConnection { implicit connection =>
+  implicit class DownloadFileSubmittable(downloadFile: DownloadFile) extends Submittable {
+    override def submit: ValidationNel[String, Long] = DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val sql = SQL (
        s"""
@@ -277,8 +277,8 @@ sealed trait Updatable {
 
 private object Updatable {
 
-  implicit def userDownload2Updatable(userDownload: UserDownload) = new Updatable {
-    override def update() : Unit = { DB.withConnection { implicit connection =>
+  implicit class UserDownloadUpdatable(userDownload: UserDownload) extends Updatable {
+    override def update(): Unit = { DB.withConnection { implicit connection =>
       import DBConstants.UserDownloads._
       val sql = SQL (
        s"""
@@ -289,7 +289,7 @@ private object Updatable {
       ) on (
         "id"    -> userDownload.id.get,
         "ip"    -> userDownload.ip,
-        "file"  -> userDownload.file,
+        "file"  -> userDownload.file.id.get,
         "year"  -> userDownload.year,
         "month" -> userDownload.month,
         "day"   -> userDownload.day,
@@ -299,8 +299,8 @@ private object Updatable {
     }}
   }
 
-  implicit def downloadFile2Updatable(downloadFile: DownloadFile) = new Updatable {
-    override def update() : Unit = { DB.withConnection { implicit connection =>
+  implicit class DownloadFileUpdatable(downloadFile: DownloadFile) extends Updatable {
+    override def update(): Unit = { DB.withConnection { implicit connection =>
       import DBConstants.DownloadFiles._
       val sql = SQL (
        s"""
@@ -323,13 +323,13 @@ private object Updatable {
 
 object AnormExtras {
   import java.math.{ BigInteger => JBigInt }
-  def timestamp(columnName: String) : RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
-  def raiseDBAccessException = throw new java.sql.SQLException("Retrieved data from database in unexpected format.")
+  def timestamp(columnName: String): RowParser[Long] = get[JBigInt](columnName)(implicitly[Column[JBigInt]]) map (new BigInt(_).toLong)
+  def raiseDBAccessException = throw new SQLException("Retrieved data from database in unexpected format.")
   def tryInsert(sql: SimpleSql[Row])(f: (Option[Long]) => ValidationNel[String, Long])
-               (implicit connection: java.sql.Connection) : ValidationNel[String, Long] = {
-    try sql.executeInsert() match { case x => f(x) }
+               (implicit connection: Connection): ValidationNel[String, Long] = {
+    try f(sql.executeInsert())
     catch {
-      case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failNel
+      case ex: MySQLIntegrityConstraintViolationException => s"SQL constraint violated: ${ex.getMessage}".failureNel[Long]
     }
   }
 }

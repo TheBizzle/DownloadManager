@@ -14,7 +14,7 @@ object GraphType {
   case object Discrete   extends GraphType
   case object Cumulative extends GraphType
 
-  def apply(s: String) : GraphType = {
+  def apply(s: String): GraphType = {
     s.toLowerCase match {
       case "discrete"   => Discrete
       case "cumulative" => Cumulative

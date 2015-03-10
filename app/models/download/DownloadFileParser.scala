@@ -16,7 +16,7 @@ object DownloadFileParser {
   private val MacOSFileRegex   = """.*\.dmg""".r
   private val WindowsFileRegex = """.*\.exe""".r
 
-  def parseLogLine(line: String) : Option[UserDownload] = {
+  def parseLogLine(line: String): Option[UserDownload] = {
 
     val refuseCatcher = """.*?""" // Four of the log entries abruptly cut off other entries; this ignores the cut-off junk at the beginning
     val ipRegex       = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"""
@@ -45,13 +45,13 @@ object DownloadFileParser {
 
   }
 
-  def parseLogLineIfRelevant(line: String) : Option[UserDownload] =
+  def parseLogLineIfRelevant(line: String): Option[UserDownload] =
     if (isRelevant(line))
       parseLogLine(line)
     else
       None
 
-  private def isRelevant(line: String) : Boolean = {
+  private def isRelevant(line: String): Boolean = {
     val RelevantLogRegex = """.*?(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - (?:-|ccl) \[[^\]]*\] "(\w)+ /netlogo/[^ ]+\.(?:exe|dmg|tar\.gz) HTTP/1\.[01]" 200 \d+ "[^"]+" "[^"]+"""".r
     line match {
       case RelevantLogRegex(method) => method != "HEAD"
@@ -59,7 +59,7 @@ object DownloadFileParser {
     }
   }
 
-  private def generateUserDownload(ip: String, date: String, version: String, filename: String, size: String) : UserDownload = {
+  private def generateUserDownload(ip: String, date: String, version: String, filename: String, size: String): UserDownload = {
 
     import org.joda.time.format.DateTimeFormat
 
@@ -83,7 +83,7 @@ object DownloadFileParser {
 
   }
 
-  private def generateDownloadFile(version: String, os: OS, size: Long, filename: String) : DownloadFile = {
+  private def generateDownloadFile(version: String, os: OS, size: Long, filename: String): DownloadFile = {
 
     val initial = DownloadFile(None, version, os, size, filename)
     val idMaybe = DownloadDBManager.submit(initial)
